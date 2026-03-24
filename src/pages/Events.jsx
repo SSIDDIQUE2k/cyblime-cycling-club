@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { usePageContent } from "../hooks/usePageContent";
+import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -227,11 +228,7 @@ export default function Events() {
   const [filterLevel, setFilterLevel] = useState("all");
   const [sortBy, setSortBy] = useState("date");
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [user, setUser] = useState(null);
-  const [profile, setProfile] = useState(null);
-  const [aiSearchQuery, setAiSearchQuery] = useState("");
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiSuggestions, setAiSuggestions] = useState([]);
+  const { user } = useAuth();
   const [advancedFilters, setAdvancedFilters] = useState({
     dateFrom: "",
     dateTo: "",
@@ -243,62 +240,10 @@ export default function Events() {
     level: "all"
   });
 
-  React.useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
-        
-        const profiles = await base44.entities.UserProfile.filter({ created_by: currentUser.email });
-        if (profiles.length > 0) {
-          setProfile(profiles[0]);
-        }
-      } catch (error) {
-        console.log("Not authenticated");
-      }
-    };
-    fetchUser();
-  }, []);
-
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['events'],
-    queryFn: async () => {
-      const allEvents = await base44.entities.Event.list('-date');
-      return allEvents.filter(e => e.status === 'published');
-    }
+    queryFn: () => base44.entities.Event.filter({ status: 'published' }, '-date', 100)
   });
-
-  const handleAISearch = async () => {
-    if (!aiSearchQuery.trim()) return;
-
-    setAiLoading(true);
-    try {
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt: `User query: "${aiSearchQuery}". Based on this query about cycling events, extract the following filters as JSON: {difficulty: string (Easy/Moderate/Challenging/Expert or null), type: string (ride/trip/workshop/social or null), datePreference: string (this_week/this_month/upcoming or null), locationKeywords: array of strings}. Return only the JSON object.`,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            difficulty: { type: ["string", "null"] },
-            type: { type: ["string", "null"] },
-            datePreference: { type: ["string", "null"] },
-            locationKeywords: { type: "array", items: { type: "string" } }
-          }
-        }
-      });
-
-      setAiSuggestions(result);
-
-      // Apply filters based on AI result
-      if (result.difficulty) setFilterLevel(result.difficulty);
-      if (result.type) setFilterType(result.type);
-      if (result.locationKeywords && result.locationKeywords.length > 0) {
-        setAdvancedFilters((prev) => ({ ...prev, location: result.locationKeywords[0] }));
-      }
-    } catch (error) {
-      console.error("AI search error:", error);
-    }
-    setAiLoading(false);
-  };
 
   const filteredEvents = events.
   filter((event) => {
@@ -392,28 +337,10 @@ export default function Events() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--cy-text-muted)]" />
               <Input
                 type="text"
-                placeholder="Try: 'beginner weekend rides near mountains' or just search by keyword..."
-                value={aiSearchQuery || searchQuery}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setAiSearchQuery(val);
-                  setSearchQuery(val);
-                }}
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') handleAISearch();
-                }}
+                placeholder="Search events by name, location..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 h-11 rounded-xl" />
-
-              {aiSearchQuery && aiSearchQuery !== searchQuery &&
-              <Button
-                onClick={handleAISearch}
-                disabled={aiLoading}
-                size="sm"
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#ff6b35] hover:bg-[#ff4500] text-white">
-
-                  {aiLoading ? "Searching..." : "AI Search"}
-                </Button>
-              }
             </div>
             
             <div className="flex gap-3 flex-wrap">

@@ -16,9 +16,8 @@ export function usePageContent(pageKey, defaults = {}) {
     queryKey: ["pageContent", pageKey],
     queryFn: async () => {
       try {
-        const allContent = await base44.entities.PageContent.list();
-        const page = allContent.find(p => p.page_key === pageKey);
-        return page?.content || null;
+        const results = await base44.entities.PageContent.filter({ page_key: pageKey }, null, 1);
+        return results.length > 0 ? results[0].content : null;
       } catch {
         return null;
       }
@@ -38,7 +37,7 @@ export function useSiteSettings(defaults = {}) {
     queryKey: ["siteSettings"],
     queryFn: async () => {
       try {
-        const settings = await base44.entities.SiteSettings.list();
+        const settings = await base44.entities.SiteSettings.list(null, 1);
         return settings.length > 0 ? settings[0].settings : null;
       } catch {
         return null;

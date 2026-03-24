@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { usePageContent } from "../hooks/usePageContent";
+import { useAuth } from "@/lib/AuthContext";
 import {
   Calendar,
   MapPin,
@@ -48,18 +49,8 @@ const fadeUp = {
 };
 
 export default function Home() {
-  const [user, setUser] = useState(null);
+  const { user } = useAuth();
   const { content } = usePageContent("home", DEFAULT_HOME_CONTENT);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
-      } catch (error) { /* not authenticated */ }
-    };
-    fetchUser();
-  }, []);
 
   // Load Elfsight for Instagram
   useEffect(() => {

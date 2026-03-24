@@ -12,18 +12,20 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 function createEntity(tableName) {
   return {
-    // base44: Entity.list('-created_date') or Entity.list()
-    async list(orderBy) {
+    // base44: Entity.list('-created_date') or Entity.list('-created_date', 50)
+    async list(orderBy, limit) {
       let query = supabase.from(tableName).select('*');
 
       if (orderBy) {
-        // Base44 uses '-field' for descending, 'field' for ascending
         const desc = orderBy.startsWith('-');
         const column = desc ? orderBy.slice(1) : orderBy;
         query = query.order(column, { ascending: !desc });
       } else {
         query = query.order('created_date', { ascending: false });
       }
+
+      // Default limit of 200 prevents full-table scans
+      query = query.limit(limit || 200);
 
       const { data, error } = await query;
       if (error) throw error;

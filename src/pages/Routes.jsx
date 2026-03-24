@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { usePageContent } from "../hooks/usePageContent";
+import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -332,19 +333,7 @@ export default function Routes() {
   const [filterSurface, setFilterSurface] = useState("all");
   const [sortBy, setSortBy] = useState("recent");
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
-  const [user, setUser] = useState(null);
-
-  React.useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
-      } catch (error) {
-        console.log("Not authenticated");
-      }
-    };
-    fetchUser();
-  }, []);
+  const { user } = useAuth();
 
   const { data: routes = [], isLoading, refetch: refetchRoutes } = useQuery({
     queryKey: ['routes'],

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "./utils";
-import { base44 } from "@/api/base44Client";
+import { useAuth } from "@/lib/AuthContext";
 import { useSiteSettings } from "./hooks/usePageContent";
 import { Menu, X, User, LogOut, Shield, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,7 @@ export default function Layout({ children }) {
   const currentPageName = location.pathname === "/" ? "Home" : location.pathname.slice(1);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [user, setUser] = useState(null);
+  const { user } = useAuth();
   const { settings } = useSiteSettings({
     social_instagram: "",
     social_facebook: "",
@@ -28,18 +28,6 @@ export default function Layout({ children }) {
     footer_text: "Ride together. Ride farther. Ride Cyblime.",
     contact_email: "info@cyblimecycling.com"
   });
-
-  React.useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
-      } catch (error) {
-        // Not authenticated — that's fine for public pages
-      }
-    };
-    fetchUser();
-  }, []);
 
   // Track scroll for navbar background transition
   useEffect(() => {

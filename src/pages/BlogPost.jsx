@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
+import { useAuth } from "@/lib/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Calendar, User, Eye, Tag, ArrowLeft, MessageCircle, Send } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -14,26 +15,11 @@ export default function BlogPost() {
   const [searchParams] = useSearchParams();
   const postId = searchParams.get('id');
   const [commentText, setCommentText] = useState("");
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
-      } catch (error) {
-        console.log("Not authenticated");
-      }
-    };
-    fetchUser();
-  }, []);
+  const { user } = useAuth();
 
   const { data: post, isLoading } = useQuery({
     queryKey: ['blogPost', postId],
-    queryFn: async () => {
-      const posts = await base44.entities.BlogPost.list();
-      return posts.find(p => p.id === postId);
-    },
+    queryFn: () => base44.entities.BlogPost.get(postId),
     enabled: !!postId
   });
 

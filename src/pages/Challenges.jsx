@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { usePageContent } from "../hooks/usePageContent";
+import { useAuth } from "@/lib/AuthContext";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -154,20 +155,8 @@ const DEFAULT_CHALLENGES_CONTENT = {
 export default function Challenges() {
   const { content: pageContent } = usePageContent("challenges", DEFAULT_CHALLENGES_CONTENT);
   const queryClient = useQueryClient();
-  const [user, setUser] = useState(null);
+  const { user } = useAuth();
   const [joinedChallenges, setJoinedChallenges] = useState(new Set());
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
-      } catch (error) {
-        console.log("Not authenticated");
-      }
-    };
-    fetchUser();
-  }, []);
 
   const { data: challenges = [] } = useQuery({
     queryKey: ['challenges'],

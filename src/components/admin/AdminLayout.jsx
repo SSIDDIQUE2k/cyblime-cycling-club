@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { createPageUrl } from "../../utils";
-import { base44 } from "@/api/base44Client";
+import { useAuth } from "@/lib/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import {
   LayoutDashboard,
@@ -33,26 +33,18 @@ import { Badge } from "@/components/ui/badge";
 
 export default function AdminLayout({ children }) {
   const location = useLocation();
-  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+  const { user, isLoadingAuth } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
-    const checkAdmin = async () => {
-      try {
-        const currentUser = await base44.auth.me();
-        if (currentUser.role !== 'admin') {
-          window.location.href = '/';
-        }
-        setUser(currentUser);
-      } catch (error) {
-        window.location.href = '/';
-      }
-    };
-    checkAdmin();
-  }, []);
+    if (!isLoadingAuth && (!user || user.role !== 'admin')) {
+      navigate('/', { replace: true });
+    }
+  }, [user, isLoadingAuth, navigate]);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('admin_theme');

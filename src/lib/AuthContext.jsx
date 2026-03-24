@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useRef } from 'react';
 import { base44 } from '@/api/supabaseClient';
 import { supabase } from '@/api/supabaseClient';
 
@@ -8,18 +8,21 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
-  const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(false);
   const [authError, setAuthError] = useState(null);
-  const [appPublicSettings, setAppPublicSettings] = useState({});
+  const checkedRef = useRef(false);
 
   useEffect(() => {
-    checkAppState();
+    // Only run once — avoid double-checking on mount + auth event
+    if (!checkedRef.current) {
+      checkedRef.current = true;
+      checkAppState();
+    }
 
-    // Listen for Supabase auth state changes (login, logout, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === 'SIGNED_IN' && session?.user) {
-          await checkUserAuth();
+          // Use the session user directly — no extra getUser() call
+          await loadProfile(session.user);
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
           setIsAuthenticated(false);
@@ -35,11 +38,11 @@ export const AuthProvider = ({ children }) => {
       setIsLoadingAuth(true);
       setAuthError(null);
 
-      // Check if user has an active session
       const { data: { session } } = await supabase.auth.getSession();
 
       if (session?.user) {
-        await checkUserAuth();
+        // We already have the user from the session — just get the profile
+        await loadProfile(session.user);
       } else {
         setIsLoadingAuth(false);
         setIsAuthenticated(false);
@@ -54,22 +57,30 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const checkUserAuth = async () => {
+  // Single DB call — just fetch the profile row
+  const loadProfile = async (authUser) => {
     try {
       setIsLoadingAuth(true);
-      const currentUser = await base44.auth.me();
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', authUser.id)
+        .single();
 
-      if (currentUser) {
-        setUser(currentUser);
-        setIsAuthenticated(true);
-      } else {
-        setIsAuthenticated(false);
-      }
+      setUser({
+        id: authUser.id,
+        email: authUser.email,
+        role: profile?.role || 'user',
+        ...profile,
+      });
+      setIsAuthenticated(true);
       setIsLoadingAuth(false);
     } catch (error) {
-      console.error('User auth check failed:', error);
+      console.error('Profile load failed:', error);
+      // Still authenticated, just no profile yet
+      setUser({ id: authUser.id, email: authUser.email, role: 'user' });
+      setIsAuthenticated(true);
       setIsLoadingAuth(false);
-      setIsAuthenticated(false);
     }
   };
 
@@ -94,9 +105,7 @@ export const AuthProvider = ({ children }) => {
         user,
         isAuthenticated,
         isLoadingAuth,
-        isLoadingPublicSettings,
         authError,
-        appPublicSettings,
         logout,
         navigateToLogin,
         checkAppState,
