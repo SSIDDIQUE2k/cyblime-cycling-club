@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "./utils";
 import { base44 } from "@/api/base44Client";
 import { useSiteSettings } from "./hooks/usePageContent";
@@ -14,7 +14,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export default function Layout({ children, currentPageName }) {
+export default function Layout({ children }) {
+  const location = useLocation();
+  // Derive currentPageName from URL path (e.g. "/Events" → "Events", "/" → "Home")
+  const currentPageName = location.pathname === "/" ? "Home" : location.pathname.slice(1);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [user, setUser] = useState(null);

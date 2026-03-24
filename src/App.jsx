@@ -5,7 +5,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import NavigationTracker from '@/lib/NavigationTracker'
 import { pagesConfig } from './pages.config'
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, Outlet } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import { ThemeProvider } from '@/lib/ThemeContext';
@@ -15,7 +15,7 @@ const AdminUserManagement = lazy(() => import('./pages/AdminUserManagement'));
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
-const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
+const MainPage = mainPageKey ? Pages[mainPageKey] : () => <></>;
 
 // Pages anyone can see without logging in
 const PUBLIC_PAGES = new Set([
@@ -34,9 +34,20 @@ const PageLoader = () => (
   </div>
 );
 
-const LayoutWrapper = ({ children, currentPageName }) => Layout ?
-  <Layout currentPageName={currentPageName}>{children}</Layout>
-  : <>{children}</>;
+// Persistent layout — stays mounted across all route changes
+const PersistentLayout = () => {
+  return Layout ? (
+    <Layout>
+      <Suspense fallback={<PageLoader />}>
+        <Outlet />
+      </Suspense>
+    </Layout>
+  ) : (
+    <Suspense fallback={<PageLoader />}>
+      <Outlet />
+    </Suspense>
+  );
+};
 
 // Wrapper that enforces auth on protected pages
 const ProtectedRoute = ({ pageName, children }) => {
@@ -58,36 +69,29 @@ const ProtectedRoute = ({ pageName, children }) => {
 
 const AppRoutes = () => {
   return (
-    <Suspense fallback={<PageLoader />}>
-      <Routes>
-        <Route path="/" element={
-          <LayoutWrapper currentPageName={mainPageKey}>
-            <MainPage />
-          </LayoutWrapper>
-        } />
+    <Routes>
+      {/* All pages share the same Layout — it never unmounts on navigation */}
+      <Route element={<PersistentLayout />}>
+        <Route path="/" element={<MainPage />} />
         {Object.entries(Pages).map(([path, Page]) => (
           <Route
             key={path}
             path={`/${path}`}
             element={
               <ProtectedRoute pageName={path}>
-                <LayoutWrapper currentPageName={path}>
-                  <Page />
-                </LayoutWrapper>
+                <Page />
               </ProtectedRoute>
             }
           />
         ))}
         <Route path="/AdminUserManagement" element={
           <ProtectedRoute pageName="AdminUserManagement">
-            <LayoutWrapper currentPageName="AdminUserManagement">
-              <AdminUserManagement />
-            </LayoutWrapper>
+            <AdminUserManagement />
           </ProtectedRoute>
         } />
-        <Route path="*" element={<PageNotFound />} />
-      </Routes>
-    </Suspense>
+      </Route>
+      <Route path="*" element={<PageNotFound />} />
+    </Routes>
   );
 };
 
