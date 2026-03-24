@@ -4,8 +4,7 @@ import { usePageContent } from "../hooks/usePageContent";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import LeaderboardCard from "../components/gamification/LeaderboardCard";
-import { generateRouteDescription } from "../components/ai/AIContentGenerator";
-import AIRoutePlanner from "../components/routes/AIRoutePlanner";
+
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import { 
@@ -184,10 +183,6 @@ const UploadRouteDialog = ({ open, onOpenChange }) => {
     });
   };
 
-  const handleAIDescription = async () => {
-    const description = await generateRouteDescription(formData);
-    setFormData({...formData, description});
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -218,15 +213,6 @@ const UploadRouteDialog = ({ open, onOpenChange }) => {
                 placeholder="Describe the route, scenery, and key points..."
                 rows={3}
               />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleAIDescription}
-                className="mt-2"
-              >
-                ✨ Generate with AI
-              </Button>
             </div>
             
             <div>
@@ -405,7 +391,6 @@ export default function Routes() {
             </p>
             
             <div className="flex flex-wrap items-center justify-center gap-4">
-              <AIRoutePlanner onRouteGenerated={refetchRoutes} />
               <Button
                 onClick={() => setUploadDialogOpen(true)}
                 className="bg-[#ff6b35] hover:bg-[#e55a2b] text-white rounded-full px-8 py-6 text-lg font-semibold"

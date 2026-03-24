@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
 import EventDetailsDialog from "../components/events/EventDetailsDialog";
 import AdvancedEventFilters from "../components/events/AdvancedEventFilters";
-import ForYouSection from "../components/events/ForYouSection";
+
 import {
   Calendar,
   MapPin,
@@ -383,8 +383,6 @@ export default function Events() {
         </div>
       </section>
 
-      {/* For You Section */}
-      <ForYouSection user={user} profile={profile} onEventClick={setSelectedEvent} />
 
       {/* Filters Section */}
       <section className="sticky top-20 z-40 bg-[var(--cy-bg-card)] border-b border-[var(--cy-border-strong)] shadow-none">

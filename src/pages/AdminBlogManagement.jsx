@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import AdminLayout from "../components/admin/AdminLayout";
-import { Plus, Edit2, Trash2, Sparkles } from "lucide-react";
+import { Plus, Edit2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import { AIBlogGenerator } from "../components/ai/AIContentGenerator";
+
 import { motion } from "framer-motion";
 
 export default function AdminBlogManagement() {
@@ -21,7 +21,6 @@ export default function AdminBlogManagement() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [aiDialogOpen, setAiDialogOpen] = useState(false);
   const [uploadedImages, setUploadedImages] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
@@ -116,15 +115,6 @@ export default function AdminBlogManagement() {
     setFormData({ ...formData, content: formData.content + imageHtml });
   };
 
-  const handleAIGenerate = (aiContent) => {
-    setFormData({
-      ...formData,
-      title: aiContent.title,
-      content: aiContent.content,
-      excerpt: aiContent.excerpt,
-      tags: aiContent.tags || []
-    });
-  };
 
   return (
     <AdminLayout>
@@ -138,14 +128,6 @@ export default function AdminBlogManagement() {
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="dark:text-white">All Posts</CardTitle>
             <div className="flex gap-3">
-              <Button
-                onClick={() => setAiDialogOpen(true)}
-                variant="outline"
-                className="dark:bg-white/5 dark:border-white/10"
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
-                AI Generate
-              </Button>
               <Button
                 onClick={() => {
                   resetForm();
@@ -317,11 +299,6 @@ export default function AdminBlogManagement() {
           </DialogContent>
         </Dialog>
 
-        <AIBlogGenerator
-          open={aiDialogOpen}
-          onOpenChange={setAiDialogOpen}
-          onGenerate={handleAIGenerate}
-        />
       </div>
     </AdminLayout>
   );
