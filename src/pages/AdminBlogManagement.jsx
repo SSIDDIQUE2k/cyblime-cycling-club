@@ -93,6 +93,8 @@ function loadCKEditorCDN() {
 function CKEditorDirect({ data, onReady, onChange }) {
   const containerRef = useRef(null);
   const editorRef = useRef(null);
+  const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -100,20 +102,25 @@ function CKEditorDirect({ data, onReady, onChange }) {
     async function boot() {
       if (!containerRef.current) return;
       try {
-        const CKEDITOR = await loadCKEditorCDN();
+        const CK = await loadCKEditorCDN();
         if (cancelled) return;
 
-        const editor = await CKEDITOR.ClassicEditor.create(containerRef.current, {
+        // Verify the global loaded correctly
+        if (!CK || !CK.ClassicEditor) {
+          throw new Error("CKEditor global not found after CDN load");
+        }
+
+        const editor = await CK.ClassicEditor.create(containerRef.current, {
           plugins: [
-            CKEDITOR.Essentials, CKEDITOR.Bold, CKEDITOR.Italic, CKEDITOR.Underline, CKEDITOR.Strikethrough,
-            CKEDITOR.Heading, CKEDITOR.Paragraph, CKEDITOR.Link, CKEDITOR.List, CKEDITOR.TodoList,
-            CKEDITOR.BlockQuote, CKEDITOR.CodeBlock,
-            CKEDITOR.Image, CKEDITOR.ImageCaption, CKEDITOR.ImageStyle, CKEDITOR.ImageToolbar,
-            CKEDITOR.ImageUpload, CKEDITOR.ImageResize, CKEDITOR.ImageInsert,
-            CKEDITOR.Table, CKEDITOR.TableToolbar, CKEDITOR.MediaEmbed,
-            CKEDITOR.Indent, CKEDITOR.IndentBlock, CKEDITOR.Alignment, CKEDITOR.Font,
-            CKEDITOR.Undo, CKEDITOR.PasteFromOffice, CKEDITOR.TextTransformation,
-            CKEDITOR.HorizontalLine, CKEDITOR.RemoveFormat, CKEDITOR.FindAndReplace, CKEDITOR.SourceEditing,
+            CK.Essentials, CK.Bold, CK.Italic, CK.Underline, CK.Strikethrough,
+            CK.Heading, CK.Paragraph, CK.Link, CK.List, CK.TodoList,
+            CK.BlockQuote, CK.CodeBlock,
+            CK.Image, CK.ImageCaption, CK.ImageStyle, CK.ImageToolbar,
+            CK.ImageUpload, CK.ImageResize, CK.ImageInsert,
+            CK.Table, CK.TableToolbar, CK.MediaEmbed,
+            CK.Indent, CK.IndentBlock, CK.Alignment, CK.Font,
+            CK.Undo, CK.PasteFromOffice, CK.TextTransformation,
+            CK.HorizontalLine, CK.RemoveFormat, CK.FindAndReplace, CK.SourceEditing,
             SupabaseUploadAdapterPlugin
           ],
           toolbar: {
@@ -156,6 +163,7 @@ function CKEditorDirect({ data, onReady, onChange }) {
         }
 
         editorRef.current = editor;
+        setLoading(false);
         if (onReady) onReady(editor);
 
         editor.model.document.on('change:data', () => {
@@ -163,6 +171,10 @@ function CKEditorDirect({ data, onReady, onChange }) {
         });
       } catch (err) {
         console.error("CKEditor init failed:", err);
+        if (!cancelled) {
+          setLoading(false);
+          setFailed(true);
+        }
       }
     }
 
@@ -177,7 +189,26 @@ function CKEditorDirect({ data, onReady, onChange }) {
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return <div ref={containerRef} />;
+  return (
+    <>
+      {loading && (
+        <div className="border rounded-lg p-8 text-center text-gray-500 animate-pulse">
+          Loading editor...
+        </div>
+      )}
+      <div ref={containerRef} style={{ display: loading ? 'none' : 'block' }} />
+      {failed && (
+        <div className="mt-2">
+          <p className="text-red-500 text-sm mb-2">Rich editor failed to load. Using plain text instead:</p>
+          <textarea
+            className="w-full border rounded-lg p-4 min-h-[300px] font-mono text-sm"
+            defaultValue={data || ''}
+            onChange={(e) => onChange && onChange(e.target.value)}
+          />
+        </div>
+      )}
+    </>
+  );
 }
 
 export default function AdminBlogManagement() {
@@ -192,7 +223,7 @@ export default function AdminBlogManagement() {
     excerpt: "",
     featured_image: "",
     category: "news",
-    published: false,
+    published: true,
     tags: [],
     video_url: ""
   });
@@ -243,7 +274,7 @@ export default function AdminBlogManagement() {
       excerpt: "",
       featured_image: "",
       category: "news",
-      published: false,
+      published: true,
       tags: [],
       video_url: ""
     });
@@ -258,10 +289,17 @@ export default function AdminBlogManagement() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    // Clean up data — remove empty optional fields so Supabase doesn't reject them
+    const data = { ...formData };
+    if (!data.video_url) delete data.video_url;
+    if (!data.featured_image) delete data.featured_image;
+    if (!data.excerpt) delete data.excerpt;
+    if (!data.tags || data.tags.length === 0) delete data.tags;
+
     if (editingPost) {
-      updateMutation.mutate({ id: editingPost.id, data: formData });
+      updateMutation.mutate({ id: editingPost.id, data });
     } else {
-      createMutation.mutate(formData);
+      createMutation.mutate(data);
     }
   };
 
