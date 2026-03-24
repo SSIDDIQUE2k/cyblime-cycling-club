@@ -25,22 +25,33 @@ export default function AdminForumManagement() {
     mutationFn: ({ id, isPinned }) => base44.entities.ForumPost.update(id, { is_pinned: !isPinned }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminForumPosts'] });
-    }
+    },
+    onError: (err) => alert("Failed to update post: " + err.message)
   });
 
   const deletePostMutation = useMutation({
     mutationFn: (id) => base44.entities.ForumPost.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminForumPosts'] });
-    }
+    },
+    onError: (err) => alert("Failed to delete post: " + err.message)
   });
 
   const deleteReplyMutation = useMutation({
     mutationFn: (id) => base44.entities.ForumReply.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminForumReplies'] });
-    }
+    },
+    onError: (err) => alert("Failed to delete reply: " + err.message)
   });
+
+  const handleDeletePost = (id) => {
+    if (window.confirm("Delete this forum post?")) deletePostMutation.mutate(id);
+  };
+
+  const handleDeleteReply = (id) => {
+    if (window.confirm("Delete this reply?")) deleteReplyMutation.mutate(id);
+  };
 
   const categoryColors = {
     general: "bg-gray-500",
@@ -115,7 +126,7 @@ export default function AdminForumManagement() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => deletePostMutation.mutate(post.id)}
+                        onClick={() => handleDeletePost(post.id)}
                         className="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -159,7 +170,7 @@ export default function AdminForumManagement() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => deleteReplyMutation.mutate(reply.id)}
+                        onClick={() => handleDeleteReply(reply.id)}
                         className="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                       >
                         <Trash2 className="w-4 h-4" />

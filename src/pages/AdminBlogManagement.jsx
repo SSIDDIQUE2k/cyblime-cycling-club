@@ -126,7 +126,8 @@ export default function AdminBlogManagement() {
       queryClient.invalidateQueries({ queryKey: ['adminBlogPosts'] });
       setEditDialogOpen(false);
       resetForm();
-    }
+    },
+    onError: (err) => alert("Failed to create post: " + err.message)
   });
 
   const updateMutation = useMutation({
@@ -135,15 +136,23 @@ export default function AdminBlogManagement() {
       queryClient.invalidateQueries({ queryKey: ['adminBlogPosts'] });
       setEditDialogOpen(false);
       resetForm();
-    }
+    },
+    onError: (err) => alert("Failed to update post: " + err.message)
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.BlogPost.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminBlogPosts'] });
-    }
+    },
+    onError: (err) => alert("Failed to delete post: " + err.message)
   });
+
+  const handleDelete = (id) => {
+    if (window.confirm("Are you sure you want to delete this post?")) {
+      deleteMutation.mutate(id);
+    }
+  };
 
   const resetForm = () => {
     setFormData({
@@ -310,7 +319,7 @@ export default function AdminBlogManagement() {
                       <Button size="sm" variant="outline" onClick={() => handleEdit(post)} className="dark:bg-white/5 dark:border-white/10">
                         <Edit2 className="w-4 h-4" />
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => deleteMutation.mutate(post.id)} className="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
+                      <Button size="sm" variant="outline" onClick={() => handleDelete(post.id)} className="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>

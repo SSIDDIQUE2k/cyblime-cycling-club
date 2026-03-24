@@ -38,28 +38,37 @@ export default function AdminChallengeManagement() {
   const createChallengeMutation = useMutation({
     mutationFn: (data) => base44.entities.Challenge.create(data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['adminChallenges']);
+      queryClient.invalidateQueries({ queryKey: ['adminChallenges'] });
       toast.success("Challenge created!");
       resetForm();
-    }
+    },
+    onError: (err) => alert("Failed to create challenge: " + err.message)
   });
 
   const updateChallengeMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Challenge.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['adminChallenges']);
+      queryClient.invalidateQueries({ queryKey: ['adminChallenges'] });
       toast.success("Challenge updated!");
       resetForm();
-    }
+    },
+    onError: (err) => alert("Failed to update challenge: " + err.message)
   });
 
   const deleteChallengeMutation = useMutation({
     mutationFn: (id) => base44.entities.Challenge.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries(['adminChallenges']);
+      queryClient.invalidateQueries({ queryKey: ['adminChallenges'] });
       toast.success("Challenge deleted!");
-    }
+    },
+    onError: (err) => alert("Failed to delete challenge: " + err.message)
   });
+
+  const handleDelete = (id) => {
+    if (window.confirm("Are you sure you want to delete this challenge?")) {
+      deleteChallengeMutation.mutate(id);
+    }
+  };
 
   const handleSubmit = () => {
     if (editingChallenge) {
@@ -276,7 +285,7 @@ export default function AdminChallengeManagement() {
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      onClick={() => deleteChallengeMutation.mutate(challenge.id)}
+                      onClick={() => handleDelete(challenge.id)}
                       className="text-red-600 hover:bg-red-50"
                     >
                       <Trash2 className="w-4 h-4" />

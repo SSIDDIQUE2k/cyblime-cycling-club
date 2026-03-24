@@ -42,7 +42,8 @@ export default function AdminEventManagement() {
       queryClient.invalidateQueries({ queryKey: ['adminEvents'] });
       setEditDialogOpen(false);
       resetForm();
-    }
+    },
+    onError: (err) => alert("Failed to create event: " + err.message)
   });
 
   const updateMutation = useMutation({
@@ -51,15 +52,23 @@ export default function AdminEventManagement() {
       queryClient.invalidateQueries({ queryKey: ['adminEvents'] });
       setEditDialogOpen(false);
       resetForm();
-    }
+    },
+    onError: (err) => alert("Failed to update event: " + err.message)
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Event.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminEvents'] });
-    }
+    },
+    onError: (err) => alert("Failed to delete event: " + err.message)
   });
+
+  const handleDelete = (id) => {
+    if (window.confirm("Are you sure you want to delete this event?")) {
+      deleteMutation.mutate(id);
+    }
+  };
 
   const resetForm = () => {
     setFormData({
@@ -146,7 +155,7 @@ export default function AdminEventManagement() {
                       <Button size="sm" variant="outline" onClick={() => handleEdit(event)} className="dark:bg-white/5 dark:border-white/10">
                         <Edit2 className="w-4 h-4" />
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => deleteMutation.mutate(event.id)} className="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
+                      <Button size="sm" variant="outline" onClick={() => handleDelete(event.id)} className="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>

@@ -46,7 +46,8 @@ export default function AdminRouteManagement() {
       queryClient.invalidateQueries({ queryKey: ['routes'] });
       setEditDialogOpen(false);
       resetForm();
-    }
+    },
+    onError: (err) => alert("Failed to create route: " + err.message)
   });
 
   const updateMutation = useMutation({
@@ -56,7 +57,8 @@ export default function AdminRouteManagement() {
       queryClient.invalidateQueries({ queryKey: ['routes'] });
       setEditDialogOpen(false);
       resetForm();
-    }
+    },
+    onError: (err) => alert("Failed to update route: " + err.message)
   });
 
   const deleteMutation = useMutation({
@@ -64,8 +66,15 @@ export default function AdminRouteManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminRoutes'] });
       queryClient.invalidateQueries({ queryKey: ['routes'] });
-    }
+    },
+    onError: (err) => alert("Failed to delete route: " + err.message)
   });
+
+  const handleDelete = (id) => {
+    if (window.confirm("Are you sure you want to delete this route?")) {
+      deleteMutation.mutate(id);
+    }
+  };
 
   const resetForm = () => {
     setFormData({
@@ -99,13 +108,14 @@ export default function AdminRouteManagement() {
       distance: parseFloat(formData.distance) || 0,
       elevation_gain: parseFloat(formData.elevation_gain) || 0,
       estimated_time: parseFloat(formData.estimated_time) || 0,
-      rating: 5.0,
-      total_rides: 0
     };
 
     if (editingRoute) {
       updateMutation.mutate({ id: editingRoute.id, data });
     } else {
+      // Only set defaults on create
+      data.rating = 5.0;
+      data.total_rides = 0;
       createMutation.mutate(data);
     }
   };
@@ -181,7 +191,7 @@ export default function AdminRouteManagement() {
                       <Button size="sm" variant="outline" onClick={() => handleEdit(route)} className="dark:bg-white/5 dark:border-white/10">
                         <Edit2 className="w-4 h-4" />
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => deleteMutation.mutate(route.id)} className="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
+                      <Button size="sm" variant="outline" onClick={() => handleDelete(route.id)} className="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20">
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>

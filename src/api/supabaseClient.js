@@ -10,6 +10,17 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 // so we don't have to rewrite every page
 // ============================================
 
+// Fields that Supabase auto-manages — strip before create/update
+const READ_ONLY_FIELDS = ['id', 'created_date', 'updated_date', 'created_by'];
+
+function stripReadOnly(record) {
+  const clean = { ...record };
+  for (const key of READ_ONLY_FIELDS) {
+    delete clean[key];
+  }
+  return clean;
+}
+
 function createEntity(tableName) {
   return {
     // base44: Entity.list('-created_date') or Entity.list('-created_date', 50)
@@ -72,7 +83,7 @@ function createEntity(tableName) {
     async create(record) {
       const { data, error } = await supabase
         .from(tableName)
-        .insert(record)
+        .insert(stripReadOnly(record))
         .select()
         .single();
       if (error) throw error;
@@ -83,7 +94,7 @@ function createEntity(tableName) {
     async update(id, updates) {
       const { data, error } = await supabase
         .from(tableName)
-        .update(updates)
+        .update(stripReadOnly(updates))
         .eq('id', id)
         .select()
         .single();
