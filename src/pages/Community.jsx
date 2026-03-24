@@ -220,7 +220,7 @@ export default function Community() {
               >
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-xl bg-[#ff6b35] flex items-center justify-center text-white font-bold flex-shrink-0">
-                    {post.created_by.charAt(0).toUpperCase()}
+                    {(post.created_by || "?").charAt(0).toUpperCase()}
                   </div>
                   
                   <div className="flex-1 min-w-0">
@@ -248,7 +248,7 @@ export default function Community() {
                     <p className="text-[var(--cy-text-muted)] mb-3 line-clamp-2">{post.content}</p>
                     
                     <div className="flex items-center gap-6 text-sm text-[var(--cy-text-muted)]">
-                      <span>by {post.created_by.split('@')[0]}</span>
+                      <span>by {(post.created_by || "Anonymous").split('@')[0]}</span>
                       <div className="flex items-center gap-1">
                         <MessageCircle className="w-4 h-4" />
                         <span>{post.reply_count || 0} replies</span>
@@ -340,7 +340,7 @@ export default function Community() {
               <div className="space-y-6">
                 <div className="p-4 bg-gray-50 rounded-xl">
                   <div className="flex items-center gap-2 mb-3 text-sm text-[var(--cy-text-muted)]">
-                    <span className="font-semibold text-[var(--cy-text)]">{selectedPost.created_by.split('@')[0]}</span>
+                    <span className="font-semibold text-[var(--cy-text)]">{(selectedPost.created_by || "Anonymous").split('@')[0]}</span>
                     <span>•</span>
                     <span>{new Date(selectedPost.created_date).toLocaleDateString()}</span>
                   </div>
@@ -356,7 +356,7 @@ export default function Community() {
                       <div key={reply.id} className="p-4 border border-[var(--cy-border-strong)] rounded-xl">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center gap-2 text-sm">
-                            <span className="font-semibold text-[var(--cy-text)]">{reply.created_by.split('@')[0]}</span>
+                            <span className="font-semibold text-[var(--cy-text)]">{(reply.created_by || "Anonymous").split('@')[0]}</span>
                             <span className="text-[var(--cy-text-muted)]">•</span>
                             <span className="text-[var(--cy-text-muted)]">{new Date(reply.created_date).toLocaleDateString()}</span>
                           </div>
