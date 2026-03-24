@@ -60,11 +60,39 @@ function SupabaseUploadAdapterPlugin(editor) {
   };
 }
 
-// Self-contained CKEditor component — owns its own lifecycle
+// Load CKEditor from CDN — avoids npm duplicate-modules bug entirely
+const CK_VERSION = "44.3.0";
+const CK_CDN = `https://cdn.ckeditor.com/ckeditor5/${CK_VERSION}`;
+
+let ckLoadPromise = null;
+function loadCKEditorCDN() {
+  if (ckLoadPromise) return ckLoadPromise;
+  ckLoadPromise = new Promise((resolve, reject) => {
+    // Already loaded?
+    if (window.CKEDITOR) return resolve(window.CKEDITOR);
+
+    // CSS
+    if (!document.querySelector('link[href*="ckeditor5"]')) {
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = `${CK_CDN}/ckeditor5.css`;
+      document.head.appendChild(link);
+    }
+
+    // JS
+    const script = document.createElement("script");
+    script.src = `${CK_CDN}/ckeditor5.umd.js`;
+    script.onload = () => resolve(window.CKEDITOR);
+    script.onerror = () => reject(new Error("Failed to load CKEditor CDN"));
+    document.head.appendChild(script);
+  });
+  return ckLoadPromise;
+}
+
+// Self-contained CKEditor component — loads from CDN, owns full lifecycle
 function CKEditorDirect({ data, onReady, onChange }) {
   const containerRef = useRef(null);
   const editorRef = useRef(null);
-  const destroyedRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -72,20 +100,20 @@ function CKEditorDirect({ data, onReady, onChange }) {
     async function boot() {
       if (!containerRef.current) return;
       try {
-        const ck = await import("ckeditor5");
-        await import("ckeditor5/ckeditor5.css");
+        const CKEDITOR = await loadCKEditorCDN();
         if (cancelled) return;
 
-        const editor = await ck.ClassicEditor.create(containerRef.current, {
+        const editor = await CKEDITOR.ClassicEditor.create(containerRef.current, {
           plugins: [
-            ck.Essentials, ck.Bold, ck.Italic, ck.Underline, ck.Strikethrough,
-            ck.Heading, ck.Paragraph, ck.Link, ck.List, ck.TodoList,
-            ck.BlockQuote, ck.CodeBlock,
-            ck.Image, ck.ImageCaption, ck.ImageStyle, ck.ImageToolbar, ck.ImageUpload, ck.ImageResize, ck.ImageInsert,
-            ck.Table, ck.TableToolbar, ck.MediaEmbed,
-            ck.Indent, ck.IndentBlock, ck.Alignment, ck.Font,
-            ck.Undo, ck.PasteFromOffice, ck.TextTransformation,
-            ck.HorizontalLine, ck.RemoveFormat, ck.FindAndReplace, ck.SourceEditing,
+            CKEDITOR.Essentials, CKEDITOR.Bold, CKEDITOR.Italic, CKEDITOR.Underline, CKEDITOR.Strikethrough,
+            CKEDITOR.Heading, CKEDITOR.Paragraph, CKEDITOR.Link, CKEDITOR.List, CKEDITOR.TodoList,
+            CKEDITOR.BlockQuote, CKEDITOR.CodeBlock,
+            CKEDITOR.Image, CKEDITOR.ImageCaption, CKEDITOR.ImageStyle, CKEDITOR.ImageToolbar,
+            CKEDITOR.ImageUpload, CKEDITOR.ImageResize, CKEDITOR.ImageInsert,
+            CKEDITOR.Table, CKEDITOR.TableToolbar, CKEDITOR.MediaEmbed,
+            CKEDITOR.Indent, CKEDITOR.IndentBlock, CKEDITOR.Alignment, CKEDITOR.Font,
+            CKEDITOR.Undo, CKEDITOR.PasteFromOffice, CKEDITOR.TextTransformation,
+            CKEDITOR.HorizontalLine, CKEDITOR.RemoveFormat, CKEDITOR.FindAndReplace, CKEDITOR.SourceEditing,
             SupabaseUploadAdapterPlugin
           ],
           toolbar: {
@@ -128,7 +156,6 @@ function CKEditorDirect({ data, onReady, onChange }) {
         }
 
         editorRef.current = editor;
-        destroyedRef.current = false;
         if (onReady) onReady(editor);
 
         editor.model.document.on('change:data', () => {
@@ -143,8 +170,7 @@ function CKEditorDirect({ data, onReady, onChange }) {
 
     return () => {
       cancelled = true;
-      if (editorRef.current && !destroyedRef.current) {
-        destroyedRef.current = true;
+      if (editorRef.current) {
         editorRef.current.destroy().catch(() => {});
         editorRef.current = null;
       }
