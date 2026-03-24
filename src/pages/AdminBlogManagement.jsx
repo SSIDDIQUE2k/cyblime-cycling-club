@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from "react";
+import React, { useState, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import AdminLayout from "../components/admin/AdminLayout";
@@ -11,60 +11,67 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
+import { CKEditor } from "@ckeditor/ckeditor5-react";
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { motion } from "framer-motion";
 
-// Custom styles for the Quill editor
+// CKEditor styles
 const editorStyles = `
-  .blog-editor .ql-container {
-    min-height: 400px;
+  .ck-editor__editable {
+    min-height: 400px !important;
     font-size: 16px;
     line-height: 1.8;
   }
-  .blog-editor .ql-editor {
-    min-height: 400px;
-    padding: 20px;
-  }
-  .blog-editor .ql-editor img {
-    max-width: 50%;
-    height: auto;
-    margin: 10px;
+  .ck-editor__editable img {
     border-radius: 8px;
-    cursor: pointer;
   }
-  .blog-editor .ql-editor img.float-left {
-    float: left;
-    margin: 0 20px 10px 0;
+  .ck.ck-editor {
+    width: 100%;
   }
-  .blog-editor .ql-editor img.float-right {
-    float: right;
-    margin: 0 0 10px 20px;
+  /* Dark mode support */
+  .dark .ck.ck-editor__main > .ck-editor__editable {
+    background: #1f2937;
+    color: #f3f4f6;
   }
-  .blog-editor .ql-editor img.float-none {
-    float: none;
-    display: block;
-    margin: 20px auto;
-    max-width: 100%;
-  }
-  .blog-editor .ql-toolbar {
-    border-radius: 8px 8px 0 0;
-    background: #f9fafb;
-    border-color: #e5e7eb;
-  }
-  .blog-editor .ql-container {
-    border-radius: 0 0 8px 8px;
-    border-color: #e5e7eb;
-  }
-  .blog-editor .ql-editor::before {
-    font-style: normal;
-    color: #9ca3af;
+  .dark .ck.ck-toolbar {
+    background: #374151;
+    border-color: #4b5563;
   }
 `;
 
+// Custom upload adapter for Supabase storage
+class SupabaseUploadAdapter {
+  constructor(loader) {
+    this.loader = loader;
+  }
+
+  upload() {
+    return this.loader.file.then(
+      (file) =>
+        new Promise((resolve, reject) => {
+          base44.integrations.Core.UploadFile({ file })
+            .then(({ file_url }) => {
+              resolve({ default: file_url });
+            })
+            .catch((error) => {
+              reject(error);
+            });
+        })
+    );
+  }
+
+  abort() {}
+}
+
+function SupabaseUploadAdapterPlugin(editor) {
+  editor.plugins.get("FileRepository").createUploadAdapter = (loader) => {
+    return new SupabaseUploadAdapter(loader);
+  };
+}
+
 export default function AdminBlogManagement() {
   const queryClient = useQueryClient();
-  const quillRef = useRef(null);
+  const editorRef = useRef(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -152,98 +159,45 @@ export default function AdminBlogManagement() {
     setUploadingImage(false);
   };
 
-  // Image handler for Quill — uploads then inserts into editor
-  const imageHandler = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = async (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      try {
-        const { file_url } = await base44.integrations.Core.UploadFile({ file });
-        const quill = quillRef.current?.getEditor();
-        if (quill) {
-          const range = quill.getSelection(true);
-          quill.insertEmbed(range.index, 'image', file_url);
-          quill.setSelection(range.index + 1);
-        }
-      } catch (error) {
-        console.error("Upload error:", error);
-        alert("Image upload failed. Please try again.");
-      }
-    };
-    input.click();
-  };
-
-  // Quill modules with full toolbar
-  const modules = useMemo(() => ({
+  // CKEditor config with image styles for wrapping
+  const editorConfig = {
+    extraPlugins: [SupabaseUploadAdapterPlugin],
     toolbar: {
-      container: [
-        [{ 'header': [1, 2, 3, false] }],
-        [{ 'font': [] }],
-        [{ 'size': ['small', false, 'large', 'huge'] }],
-        ['bold', 'italic', 'underline', 'strike'],
-        [{ 'color': [] }, { 'background': [] }],
-        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-        [{ 'align': [] }],
-        ['blockquote', 'code-block'],
-        ['link', 'image', 'video'],
-        [{ 'indent': '-1' }, { 'indent': '+1' }],
-        ['clean'],
-      ],
-      handlers: {
-        image: imageHandler
-      }
+      items: [
+        'heading', '|',
+        'bold', 'italic', 'underline', 'strikethrough', '|',
+        'link', 'blockQuote', 'code', '|',
+        'bulletedList', 'numberedList', 'todoList', '|',
+        'outdent', 'indent', '|',
+        'uploadImage', 'insertTable', 'mediaEmbed', '|',
+        'undo', 'redo'
+      ]
     },
-    clipboard: {
-      matchVisual: false
-    }
-  }), []);
-
-  const formats = [
-    'header', 'font', 'size',
-    'bold', 'italic', 'underline', 'strike',
-    'color', 'background',
-    'list', 'bullet',
-    'align',
-    'blockquote', 'code-block',
-    'link', 'image', 'video',
-    'indent',
-    'float', 'height', 'width',
-  ];
-
-  // Insert image with float style
-  const insertImageWithFloat = (position) => {
-    const quill = quillRef.current?.getEditor();
-    if (!quill) return;
-
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = async (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      try {
-        const { file_url } = await base44.integrations.Core.UploadFile({ file });
-        const range = quill.getSelection(true);
-
-        let style = '';
-        if (position === 'left') style = 'float:left;margin:0 20px 10px 0;max-width:50%;';
-        else if (position === 'right') style = 'float:right;margin:0 0 10px 20px;max-width:50%;';
-        else style = 'display:block;margin:20px auto;max-width:100%;';
-
-        quill.clipboard.dangerouslyPasteHTML(
-          range.index,
-          `<img src="${file_url}" style="${style}border-radius:8px;" />`
-        );
-        quill.setSelection(range.index + 1);
-      } catch (error) {
-        console.error("Upload error:", error);
-        alert("Image upload failed. Please try again.");
-      }
-    };
-    input.click();
+    image: {
+      toolbar: [
+        'imageStyle:inline',
+        'imageStyle:wrapText',
+        'imageStyle:breakText',
+        '|',
+        'imageTextAlternative',
+        'toggleImageCaption',
+        '|',
+        'resizeImage'
+      ],
+      resizeOptions: [
+        { name: 'resizeImage:original', value: null, label: 'Original' },
+        { name: 'resizeImage:25', value: '25', label: '25%' },
+        { name: 'resizeImage:50', value: '50', label: '50%' },
+        { name: 'resizeImage:75', value: '75', label: '75%' },
+      ]
+    },
+    table: {
+      contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells']
+    },
+    mediaEmbed: {
+      previewsInData: true
+    },
+    placeholder: 'Write your blog post here...'
   };
 
   return (
@@ -374,7 +328,7 @@ export default function AdminBlogManagement() {
                         onClick={() => setFormData({...formData, featured_image: ""})}
                         className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
                       >
-                        ×
+                        x
                       </button>
                     </div>
                   )}
@@ -400,58 +354,27 @@ export default function AdminBlogManagement() {
                 />
               </div>
 
-              {/* Image Insert Buttons */}
+              {/* CKEditor — Rich Text with Image Wrapping */}
               <div>
-                <Label className="mb-2 block">Insert Image with Text Wrap</Label>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => insertImageWithFloat('left')}
-                    className="text-xs"
-                  >
-                    📷 Float Left
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => insertImageWithFloat('right')}
-                    className="text-xs"
-                  >
-                    📷 Float Right
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => insertImageWithFloat('center')}
-                    className="text-xs"
-                  >
-                    📷 Full Width
-                  </Button>
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  Or use the image button in the toolbar below to insert inline
-                </p>
-              </div>
-
-              {/* Rich Text Editor */}
-              <div className="blog-editor">
                 <Label className="mb-2 block">Content</Label>
-                <ReactQuill
-                  ref={quillRef}
-                  value={formData.content}
-                  onChange={(content) => setFormData({...formData, content})}
-                  modules={modules}
-                  formats={formats}
-                  placeholder="Write your blog post here..."
-                  theme="snow"
+                <p className="text-xs text-gray-500 mb-2">
+                  Insert images via toolbar. Click an image to see wrap options: Inline, Wrap Text (left/right), or Break Text (block).
+                </p>
+                <CKEditor
+                  editor={ClassicEditor}
+                  config={editorConfig}
+                  data={formData.content}
+                  onReady={(editor) => {
+                    editorRef.current = editor;
+                  }}
+                  onChange={(event, editor) => {
+                    const data = editor.getData();
+                    setFormData((prev) => ({ ...prev, content: data }));
+                  }}
                 />
               </div>
 
-              {/* Category + Publish */}
+              {/* Category + Tags + Publish */}
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <Label>Category</Label>
