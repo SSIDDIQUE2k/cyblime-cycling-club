@@ -1,6 +1,6 @@
-#env
 .env
 .env.*
+*.local
 
 # Logs
 logs
@@ -14,7 +14,6 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
-*.local
 
 # Editor directories and files
 .vscode/*
@@ -27,4 +26,25 @@ dist-ssr
 *.sln
 *.sw?
 
-.env
+# Python / Django (legacy - do not commit)
+.venv/
+venv/
+__pycache__/
+*.pyc
+staticfiles/
+media/
+articles/
+blog/
+core/
+cyblime_cycling/
+dashboard/
+events/
+gallery/
+secure_admin/
+static/
+store/
+strava/
+templates/
+users/
+supabase/
+manage.py
