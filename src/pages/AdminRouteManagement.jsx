@@ -96,9 +96,9 @@ export default function AdminRouteManagement() {
     e.preventDefault();
     const data = {
       ...formData,
-      distance: parseFloat(formData.distance),
-      elevation_gain: parseFloat(formData.elevation_gain),
-      estimated_time: parseFloat(formData.estimated_time),
+      distance: parseFloat(formData.distance) || 0,
+      elevation_gain: parseFloat(formData.elevation_gain) || 0,
+      estimated_time: parseFloat(formData.estimated_time) || 0,
       rating: 5.0,
       total_rides: 0
     };
@@ -125,6 +125,7 @@ export default function AdminRouteManagement() {
       }
     } catch (error) {
       console.error("Upload error:", error);
+      alert("File upload failed. Please try again.");
     }
     setUploadingImage(false);
   };

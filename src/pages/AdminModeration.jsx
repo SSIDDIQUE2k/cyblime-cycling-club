@@ -78,7 +78,7 @@ const ReportCard = ({ report, onApprove, onReject, onView }) => {
               </div>
 
               <p className="text-sm text-gray-900 dark:text-white font-medium mb-2">
-                Content ID: {report.content_id.substring(0, 8)}...
+                Content ID: {report.content_id ? report.content_id.substring(0, 8) + '...' : 'N/A'}
               </p>
 
               {report.description && (
@@ -88,7 +88,7 @@ const ReportCard = ({ report, onApprove, onReject, onView }) => {
               )}
 
               <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-4">
-                <span>Reported by: {report.created_by.split('@')[0]}</span>
+                <span>Reported by: {report.created_by ? report.created_by.split('@')[0] : 'Unknown'}</span>
               </div>
 
               {/* Actions */}

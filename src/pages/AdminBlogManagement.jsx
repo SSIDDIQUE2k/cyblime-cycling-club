@@ -106,6 +106,7 @@ export default function AdminBlogManagement() {
       }
     } catch (error) {
       console.error("Upload error:", error);
+      alert("Image upload failed. Please try again.");
     }
     setUploadingImage(false);
   };
