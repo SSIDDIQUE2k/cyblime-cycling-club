@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { usePageContent } from "../hooks/usePageContent";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import LeaderboardCard from "../components/gamification/LeaderboardCard";
+
 
 import { Link } from "react-router-dom";
 import { createPageUrl } from "../utils";
@@ -476,40 +476,6 @@ export default function Routes() {
         </div>
       </section>
 
-      {/* Leaderboards */}
-      <section className="py-8 bg-[var(--cy-bg-card)] border-b border-[var(--cy-border)]">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="grid md:grid-cols-3 gap-6">
-            <LeaderboardCard
-              title="Top Route Creators"
-              type="routes"
-              leaders={[
-                { name: "Sarah M.", stat: "12 routes", value: "12" },
-                { name: "Mike R.", stat: "8 routes", value: "8" },
-                { name: "Emma K.", stat: "6 routes", value: "6" }
-              ]}
-            />
-            <LeaderboardCard
-              title="Most Active Riders"
-              type="distance"
-              leaders={[
-                { name: "John D.", stat: "2,450 km", value: "2450km" },
-                { name: "Lisa T.", stat: "1,890 km", value: "1890km" },
-                { name: "Chris P.", stat: "1,650 km", value: "1650km" }
-              ]}
-            />
-            <LeaderboardCard
-              title="Popular Routes"
-              type="events"
-              leaders={[
-                { name: "Mountain Loop", stat: "156 rides", value: "156" },
-                { name: "Coastal Path", stat: "142 rides", value: "142" },
-                { name: "City Circuit", stat: "98 rides", value: "98" }
-              ]}
-            />
-          </div>
-        </div>
-      </section>
 
       {/* Routes Grid */}
       <section className="py-16">
