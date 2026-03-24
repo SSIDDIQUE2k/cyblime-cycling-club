@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import AdminLayout from "../components/admin/AdminLayout";
@@ -11,204 +11,41 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Editor } from "@tinymce/tinymce-react";
+import "tinymce/tinymce";
+import "tinymce/models/dom";
+import "tinymce/themes/silver";
+import "tinymce/icons/default";
+import "tinymce/skins/ui/oxide/skin.min.css";
+import "tinymce/plugins/advlist";
+import "tinymce/plugins/autolink";
+import "tinymce/plugins/lists";
+import "tinymce/plugins/link";
+import "tinymce/plugins/image";
+import "tinymce/plugins/charmap";
+import "tinymce/plugins/anchor";
+import "tinymce/plugins/searchreplace";
+import "tinymce/plugins/visualblocks";
+import "tinymce/plugins/code";
+import "tinymce/plugins/fullscreen";
+import "tinymce/plugins/insertdatetime";
+import "tinymce/plugins/media";
+import "tinymce/plugins/table";
+import "tinymce/plugins/help";
+import "tinymce/plugins/wordcount";
+import "tinymce/plugins/emoticons";
+import "tinymce/plugins/emoticons/js/emojis";
+import "tinymce/plugins/codesample";
 import { motion } from "framer-motion";
 
-// Custom styles
-const editorStyles = `
-  .ck-editor__editable {
-    min-height: 400px !important;
-    font-size: 16px;
-    line-height: 1.8;
-  }
-  .ck-editor__editable img {
-    border-radius: 8px;
-  }
-  .ck.ck-editor {
-    width: 100%;
-  }
-  .dark .ck.ck-editor__main > .ck-editor__editable {
-    background: #1f2937;
-    color: #f3f4f6;
-  }
-  .dark .ck.ck-toolbar {
-    background: #374151;
-    border-color: #4b5563;
-  }
-`;
-
-// Custom upload adapter for Supabase storage
-class SupabaseUploadAdapter {
-  constructor(loader) {
-    this.loader = loader;
-  }
-  upload() {
-    return this.loader.file.then(
-      (file) =>
-        new Promise((resolve, reject) => {
-          base44.integrations.Core.UploadFile({ file })
-            .then(({ file_url }) => resolve({ default: file_url }))
-            .catch(reject);
-        })
-    );
-  }
-  abort() {}
-}
-
-function SupabaseUploadAdapterPlugin(editor) {
-  editor.plugins.get("FileRepository").createUploadAdapter = (loader) => {
-    return new SupabaseUploadAdapter(loader);
-  };
-}
-
-// Load CKEditor from CDN — avoids npm duplicate-modules bug entirely
-const CK_VERSION = "44.3.0";
-const CK_CDN = `https://cdn.ckeditor.com/ckeditor5/${CK_VERSION}`;
-
-let ckLoadPromise = null;
-function loadCKEditorCDN() {
-  if (ckLoadPromise) return ckLoadPromise;
-  ckLoadPromise = new Promise((resolve, reject) => {
-    // Already loaded?
-    if (window.CKEDITOR) return resolve(window.CKEDITOR);
-
-    // CSS
-    if (!document.querySelector('link[href*="ckeditor5"]')) {
-      const link = document.createElement("link");
-      link.rel = "stylesheet";
-      link.href = `${CK_CDN}/ckeditor5.css`;
-      document.head.appendChild(link);
-    }
-
-    // JS
-    const script = document.createElement("script");
-    script.src = `${CK_CDN}/ckeditor5.umd.js`;
-    script.onload = () => resolve(window.CKEDITOR);
-    script.onerror = () => reject(new Error("Failed to load CKEditor CDN"));
-    document.head.appendChild(script);
+// TinyMCE image upload handler — uploads to Supabase Storage
+function tinymceImageUpload(blobInfo) {
+  return new Promise((resolve, reject) => {
+    const file = blobInfo.blob();
+    base44.integrations.Core.UploadFile({ file })
+      .then(({ file_url }) => resolve(file_url))
+      .catch((err) => reject("Upload failed: " + err.message));
   });
-  return ckLoadPromise;
-}
-
-// Self-contained CKEditor component — loads from CDN, owns full lifecycle
-function CKEditorDirect({ data, onReady, onChange }) {
-  const containerRef = useRef(null);
-  const editorRef = useRef(null);
-  const [loading, setLoading] = useState(true);
-  const [failed, setFailed] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function boot() {
-      if (!containerRef.current) return;
-      try {
-        const CK = await loadCKEditorCDN();
-        if (cancelled) return;
-
-        // Verify the global loaded correctly
-        if (!CK || !CK.ClassicEditor) {
-          throw new Error("CKEditor global not found after CDN load");
-        }
-
-        const editor = await CK.ClassicEditor.create(containerRef.current, {
-          plugins: [
-            CK.Essentials, CK.Bold, CK.Italic, CK.Underline, CK.Strikethrough,
-            CK.Heading, CK.Paragraph, CK.Link, CK.List, CK.TodoList,
-            CK.BlockQuote, CK.CodeBlock,
-            CK.Image, CK.ImageCaption, CK.ImageStyle, CK.ImageToolbar,
-            CK.ImageUpload, CK.ImageResize, CK.ImageInsert,
-            CK.Table, CK.TableToolbar, CK.MediaEmbed,
-            CK.Indent, CK.IndentBlock, CK.Alignment, CK.Font,
-            CK.Undo, CK.PasteFromOffice, CK.TextTransformation,
-            CK.HorizontalLine, CK.RemoveFormat, CK.FindAndReplace, CK.SourceEditing,
-            SupabaseUploadAdapterPlugin
-          ],
-          toolbar: {
-            items: [
-              'heading', '|',
-              'bold', 'italic', 'underline', 'strikethrough', '|',
-              'fontSize', 'fontColor', 'fontBackgroundColor', '|',
-              'alignment', '|',
-              'link', 'blockQuote', 'codeBlock', '|',
-              'bulletedList', 'numberedList', 'todoList', '|',
-              'outdent', 'indent', '|',
-              'insertImage', 'insertTable', 'mediaEmbed', 'horizontalLine', '|',
-              'removeFormat', 'findAndReplace', 'sourceEditing', '|',
-              'undo', 'redo'
-            ],
-            shouldNotGroupWhenFull: false
-          },
-          image: {
-            toolbar: [
-              'imageStyle:inline', 'imageStyle:wrapText', 'imageStyle:breakText', '|',
-              'resizeImage', '|', 'imageTextAlternative', 'toggleImageCaption'
-            ],
-            resizeOptions: [
-              { name: 'resizeImage:original', value: null, label: 'Original' },
-              { name: 'resizeImage:custom', value: 'custom', label: 'Custom' },
-              { name: 'resizeImage:25', value: '25', label: '25%' },
-              { name: 'resizeImage:50', value: '50', label: '50%' },
-              { name: 'resizeImage:75', value: '75', label: '75%' },
-            ]
-          },
-          table: { contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells'] },
-          mediaEmbed: { previewsInData: true },
-          placeholder: 'Write your blog post here...',
-          initialData: data || ''
-        });
-
-        if (cancelled) {
-          await editor.destroy();
-          return;
-        }
-
-        editorRef.current = editor;
-        setLoading(false);
-        if (onReady) onReady(editor);
-
-        editor.model.document.on('change:data', () => {
-          if (onChange) onChange(editor.getData());
-        });
-      } catch (err) {
-        console.error("CKEditor init failed:", err);
-        if (!cancelled) {
-          setLoading(false);
-          setFailed(true);
-        }
-      }
-    }
-
-    boot();
-
-    return () => {
-      cancelled = true;
-      if (editorRef.current) {
-        editorRef.current.destroy().catch(() => {});
-        editorRef.current = null;
-      }
-    };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  return (
-    <>
-      {loading && (
-        <div className="border rounded-lg p-8 text-center text-gray-500 animate-pulse">
-          Loading editor...
-        </div>
-      )}
-      <div ref={containerRef} style={{ display: loading ? 'none' : 'block' }} />
-      {failed && (
-        <div className="mt-2">
-          <p className="text-red-500 text-sm mb-2">Rich editor failed to load. Using plain text instead:</p>
-          <textarea
-            className="w-full border rounded-lg p-4 min-h-[300px] font-mono text-sm"
-            defaultValue={data || ''}
-            onChange={(e) => onChange && onChange(e.target.value)}
-          />
-        </div>
-      )}
-    </>
-  );
 }
 
 export default function AdminBlogManagement() {
@@ -317,10 +154,8 @@ export default function AdminBlogManagement() {
     setUploadingImage(false);
   };
 
-
   return (
     <AdminLayout>
-      <style>{editorStyles}</style>
       <div className="max-w-7xl mx-auto space-y-6">
         <div>
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Blog Posts</h1>
@@ -454,7 +289,7 @@ export default function AdminBlogManagement() {
                 <div>
                   <Label>Excerpt</Label>
                   <Textarea
-                    value={formData.excerpt}
+                    value={formData.excerpt || ""}
                     onChange={(e) => setFormData({...formData, excerpt: e.target.value})}
                     placeholder="Brief summary of the post..."
                     rows={4}
@@ -472,17 +307,47 @@ export default function AdminBlogManagement() {
                 />
               </div>
 
-              {/* CKEditor — initialized directly (no React wrapper) */}
+              {/* TinyMCE Editor */}
               <div>
                 <Label className="mb-2 block">Content</Label>
-                <p className="text-xs text-gray-500 mb-2">
-                  Click an image after inserting to see: Wrap Text (left/right), Break Text (block), resize handles, and caption toggle.
-                </p>
                 {editDialogOpen && (
-                  <CKEditorDirect
-                    data={formData.content}
-                    onReady={(editor) => { editorRef.current = editor; }}
-                    onChange={(html) => setFormData((prev) => ({ ...prev, content: html }))}
+                  <Editor
+                    onInit={(evt, editor) => { editorRef.current = editor; }}
+                    value={formData.content}
+                    onEditorChange={(content) => setFormData((prev) => ({ ...prev, content }))}
+                    init={{
+                      height: 500,
+                      menubar: true,
+                      skin: false,
+                      content_css: false,
+                      plugins: [
+                        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap',
+                        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                        'insertdatetime', 'media', 'table', 'help', 'wordcount',
+                        'emoticons', 'codesample'
+                      ],
+                      toolbar: 'undo redo | blocks | bold italic underline strikethrough | ' +
+                        'forecolor backcolor | alignleft aligncenter alignright alignjustify | ' +
+                        'bullist numlist outdent indent | link image media table | ' +
+                        'removeformat code fullscreen help',
+                      images_upload_handler: tinymceImageUpload,
+                      automatic_uploads: true,
+                      image_advtab: true,
+                      image_caption: true,
+                      image_title: true,
+                      media_live_embeds: true,
+                      content_style: `
+                        body {
+                          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                          font-size: 16px;
+                          line-height: 1.8;
+                          padding: 16px;
+                        }
+                        img { max-width: 100%; border-radius: 8px; }
+                      `,
+                      promotion: false,
+                      branding: false
+                    }}
                   />
                 )}
               </div>
