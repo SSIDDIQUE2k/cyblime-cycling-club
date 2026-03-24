@@ -57,11 +57,6 @@ const ProtectedRoute = ({ pageName, children }) => {
 };
 
 const AppRoutes = () => {
-  const { isLoadingAuth } = useAuth();
-
-  // Only show full-screen loader on initial app load
-  if (isLoadingAuth) return <PageLoader />;
-
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
