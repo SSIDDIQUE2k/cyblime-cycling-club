@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { createPageUrl } from "../../utils";
 import { useAuth } from "@/lib/AuthContext";
+import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import {
   LayoutDashboard,
@@ -67,10 +68,8 @@ export default function AdminLayout({ children }) {
 
   const { data: pendingReports = [] } = useQuery({
     queryKey: ['pendingReports'],
-    queryFn: async () => {
-      const reports = await base44.entities.Report.list();
-      return reports.filter(r => r.status === 'pending');
-    }
+    queryFn: () => base44.entities.Report.filter({ status: 'pending' }, null, 50),
+    staleTime: 2 * 60 * 1000
   });
 
   const navItems = [

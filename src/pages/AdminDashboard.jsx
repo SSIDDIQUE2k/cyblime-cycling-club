@@ -99,37 +99,44 @@ function formatTimeAgo(dateStr) {
 export default function AdminDashboard() {
   const navigate = useNavigate();
 
+  // Only fetch what the dashboard actually displays — small limits for speed
   const { data: users = [] } = useQuery({
     queryKey: ['adminUsers'],
-    queryFn: () => base44.entities.User.list()
+    queryFn: () => base44.entities.User.list(null, 100),
+    staleTime: 5 * 60 * 1000
   });
 
   const { data: posts = [] } = useQuery({
     queryKey: ['adminBlogPosts'],
-    queryFn: () => base44.entities.BlogPost.list('-created_date')
+    queryFn: () => base44.entities.BlogPost.list('-created_date', 20),
+    staleTime: 5 * 60 * 1000
   });
 
   const { data: events = [] } = useQuery({
     queryKey: ['adminEvents'],
-    queryFn: () => base44.entities.Event.list('-created_date')
+    queryFn: () => base44.entities.Event.list('-created_date', 20),
+    staleTime: 5 * 60 * 1000
   });
 
   const { data: routes = [] } = useQuery({
     queryKey: ['adminRoutes'],
-    queryFn: () => base44.entities.Route.list('-created_date')
+    queryFn: () => base44.entities.Route.list('-created_date', 10),
+    staleTime: 5 * 60 * 1000
   });
 
   const { data: reports = [] } = useQuery({
     queryKey: ['adminReports'],
-    queryFn: () => base44.entities.Report.list()
+    queryFn: () => base44.entities.Report.filter({ status: 'pending' }, null, 50),
+    staleTime: 2 * 60 * 1000
   });
 
   const { data: forumPosts = [] } = useQuery({
     queryKey: ['adminForumPosts'],
-    queryFn: () => base44.entities.ForumPost.list('-created_date')
+    queryFn: () => base44.entities.ForumPost.list('-created_date', 10),
+    staleTime: 5 * 60 * 1000
   });
 
-  const pendingReports = reports.filter(r => r.status === 'pending').length;
+  const pendingReports = reports.length;
 
   // Build real activity feed from recent blog posts, events, forum posts, and routes
   const activityFeed = useMemo(() => {
