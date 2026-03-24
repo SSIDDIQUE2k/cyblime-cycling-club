@@ -11,6 +11,10 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+    dedupe: ['ckeditor5'],
+  },
+  optimizeDeps: {
+    include: ['ckeditor5', '@ckeditor/ckeditor5-react'],
   },
   build: {
     rollupOptions: {

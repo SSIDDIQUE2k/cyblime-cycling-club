@@ -6,12 +6,8 @@ import {
   Award, 
   Heart,
   CheckCircle2,
-  ArrowRight,
   Quote
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { createPageUrl } from "../utils";
 import { usePageContent, useTestimonials } from "../hooks/usePageContent";
 
 const ValueCard = ({ icon: Icon, title, description, index }) => {

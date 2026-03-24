@@ -8,7 +8,6 @@ import {
   TrendingUp,
   Activity,
   Eye,
-  MessageSquare,
   Calendar,
   Map,
   Award

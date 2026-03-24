@@ -9,7 +9,6 @@ import {
   Target,
   Calendar,
   TrendingUp,
-  Award,
   CheckCircle2,
   Clock,
   Users,

@@ -247,8 +247,8 @@ export default function Events() {
 
   const filteredEvents = events.
   filter((event) => {
-    const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      event.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = (event.title || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (event.description || "").toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = filterType === "all" || event.type === filterType;
     const matchesLevel = filterLevel === "all" || event.level === filterLevel;
 

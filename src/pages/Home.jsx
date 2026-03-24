@@ -13,8 +13,7 @@ import {
   Compass,
   Heart,
   Users,
-  Clock,
-  ChevronRight
+  Clock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 

@@ -12,7 +12,6 @@ import {
   Users,
   Flag,
   TrendingUp,
-  Settings,
   LogOut,
   Menu,
   X,
@@ -188,13 +187,13 @@ export default function AdminLayout({ children }) {
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#c9a227] to-[#b89123] flex items-center justify-center flex-shrink-0">
                 <span className="text-white font-bold text-sm">
-                  {user.full_name?.charAt(0) || user.email.charAt(0).toUpperCase()}
+                  {user.full_name?.charAt(0) || user.email?.charAt(0)?.toUpperCase() || "U"}
                 </span>
               </div>
               {sidebarOpen && (
                 <div className="flex-1 min-w-0">
                   <p className={`font-medium text-sm truncate ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                    {user.full_name || user.email.split('@')[0]}
+                    {user.full_name || user.email?.split('@')[0] || "User"}
                   </p>
                   <p className="text-xs text-gray-500 truncate">{user.email}</p>
                 </div>

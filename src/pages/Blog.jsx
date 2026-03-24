@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { usePageContent } from "../hooks/usePageContent";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Calendar, User, Eye, ArrowRight, Tag, Search, TrendingUp, X } from "lucide-react";
+import { Calendar, User, Eye, ArrowRight, Search, TrendingUp, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -239,7 +239,7 @@ export default function Blog() {
                         className="flex items-center gap-1 hover:text-[#ff6b35] transition-colors"
                       >
                         <User className="w-3 h-3" />
-                        <span>{post.created_by.split('@')[0]}</span>
+                        <span>{(post.created_by || "Anonymous").split('@')[0]}</span>
                       </Link>
                     </div>
                     <Link to={createPageUrl("BlogPost") + `?id=${post.id}`}>
@@ -301,7 +301,7 @@ export default function Blog() {
                     className="flex items-center gap-2 text-xs text-[var(--cy-text-muted)] hover:text-[#ff6b35] transition-colors mb-4"
                   >
                     <User className="w-3 h-3" />
-                    <span>By {post.created_by.split('@')[0]}</span>
+                    <span>By {(post.created_by || "Anonymous").split('@')[0]}</span>
                   </Link>
                   <Link to={createPageUrl("BlogPost") + `?id=${post.id}`}>
                     <Button variant="ghost" className="w-full text-[#ff6b35] hover:text-[#e55a2b]">

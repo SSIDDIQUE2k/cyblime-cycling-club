@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import { usePageContent } from "../hooks/usePageContent";
-import { Camera, Instagram } from "lucide-react";
+import { Instagram } from "lucide-react";
 
 const DEFAULT_GALLERY_CONTENT = {
   hero: {

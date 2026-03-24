@@ -18,12 +18,8 @@ import {
   Upload,
   Heart,
   Share2,
-  Download,
-  MessageCircle,
   Star,
   ChevronRight,
-  Plus,
-  X,
   Activity
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -42,7 +38,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 
@@ -122,7 +117,7 @@ const RouteCard = ({ route, index }) => {
           <div className="flex items-center gap-2 text-sm text-[var(--cy-text-muted)]">
             <span>{route.total_rides || 0} rides</span>
             <span>•</span>
-            <span>by {route.created_by}</span>
+            <span>by {route.created_by || "Anonymous"}</span>
           </div>
           <span className="text-[#ff6b35] font-medium flex items-center">
             View Route

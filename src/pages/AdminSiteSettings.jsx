@@ -6,8 +6,6 @@ import {
   Save,
   Globe,
   Mail,
-  Phone,
-  MapPin,
   Facebook,
   Instagram,
   Twitter,

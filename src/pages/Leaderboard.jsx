@@ -2,10 +2,10 @@ import React, { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { motion } from "framer-motion";
-import { Trophy, Medal, Crown, TrendingUp, Calendar, Map, Award } from "lucide-react";
+import { Trophy, Medal, Crown, TrendingUp, Award } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const LeaderboardCard = ({ rank, user, points, level, badges, metric }) => {
   const getRankIcon = () => {
@@ -29,12 +29,12 @@ const LeaderboardCard = ({ rank, user, points, level, badges, metric }) => {
         
         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#ff6b35] to-[#e55a2b] flex items-center justify-center flex-shrink-0">
           <span className="text-white font-bold text-lg">
-            {user.full_name?.charAt(0) || user.email.charAt(0).toUpperCase()}
+            {user.full_name?.charAt(0) || user.email?.charAt(0)?.toUpperCase() || "?"}
           </span>
         </div>
 
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-[var(--cy-text)] truncate">{user.full_name || user.email.split('@')[0]}</p>
+          <p className="font-semibold text-[var(--cy-text)] truncate">{user.full_name || user.email?.split('@')[0] || "Anonymous"}</p>
           <div className="flex items-center gap-2 text-sm text-[var(--cy-text-muted)]">
             <Badge variant="outline" className="text-xs">Level {level}</Badge>
             {badges > 0 && (

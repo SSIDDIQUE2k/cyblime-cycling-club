@@ -3,14 +3,11 @@ import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  MessageSquare,
   Plus,
   Search,
-  TrendingUp,
   Eye,
   MessageCircle,
   Pin,
-  Filter,
   Send,
   Flag
 } from "lucide-react";
@@ -81,7 +78,8 @@ export default function Community() {
       queryClient.invalidateQueries({ queryKey: ['forumPosts'] });
       setCreateDialogOpen(false);
       setNewPost({ title: "", content: "", category: "general" });
-    }
+    },
+    onError: (err) => alert("Failed to create post: " + err.message)
   });
 
   const createReplyMutation = useMutation({
@@ -93,7 +91,8 @@ export default function Community() {
         last_activity: new Date().toISOString()
       });
       setReplyContent("");
-    }
+    },
+    onError: (err) => alert("Failed to post reply: " + err.message)
   });
 
   const reportMutation = useMutation({
@@ -103,7 +102,8 @@ export default function Community() {
       setReportTarget(null);
       setReportReason("spam");
       setReportDescription("");
-    }
+    },
+    onError: (err) => alert("Failed to submit report: " + err.message)
   });
 
   const handleReport = (contentType, contentId) => {
@@ -122,8 +122,8 @@ export default function Community() {
   };
 
   const filteredPosts = posts.filter(post => {
-    const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         post.content.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = (post.title || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         (post.content || "").toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = filterCategory === "all" || post.category === filterCategory;
     return matchesSearch && matchesCategory;
   });

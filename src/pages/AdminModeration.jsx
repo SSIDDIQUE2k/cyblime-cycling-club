@@ -8,11 +8,8 @@ import {
   CheckCircle,
   XCircle,
   Eye,
-  Trash2,
   AlertTriangle,
-  ChevronRight,
-  Filter,
-  X
+  Filter
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

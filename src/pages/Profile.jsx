@@ -15,7 +15,6 @@ import {
   CheckCircle2,
   Clock,
   FileText,
-  Heart,
   TrendingUp,
   Award,
   Bike,
@@ -27,13 +26,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue } from
-"@/components/ui/select";
+
+
 import {
   Card,
   CardContent,
@@ -44,8 +38,7 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogTitle,
-  DialogTrigger } from
+  DialogTitle } from
 "@/components/ui/dialog";
 import {
   Tabs,

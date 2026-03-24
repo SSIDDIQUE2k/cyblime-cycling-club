@@ -307,7 +307,7 @@ export default function BlogPost() {
               <form onSubmit={handleSubmitComment} className="mb-8 pb-8 border-b border-[var(--cy-border-strong)]">
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#ff6b35] to-[#e55a2b] flex items-center justify-center text-[var(--cy-text)] font-bold flex-shrink-0">
-                    {(user.full_name || user.email)?.charAt(0).toUpperCase()}
+                    {(user.full_name || user.email || "U").charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1">
                     <Textarea

@@ -8,8 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { CreditCard, Ticket, Check } from "lucide-react";
+import { CreditCard, Ticket } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import {
   Select,
