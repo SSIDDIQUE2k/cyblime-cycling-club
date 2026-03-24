@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import AdminLayout from "../components/admin/AdminLayout";
@@ -11,44 +11,6 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CKEditor } from "@ckeditor/ckeditor5-react";
-import {
-  ClassicEditor,
-  Essentials,
-  Bold,
-  Italic,
-  Underline,
-  Strikethrough,
-  Heading,
-  Paragraph,
-  Link,
-  List,
-  TodoList,
-  BlockQuote,
-  CodeBlock,
-  Image,
-  ImageCaption,
-  ImageStyle,
-  ImageToolbar,
-  ImageUpload,
-  ImageResize,
-  ImageInsert,
-  Table,
-  TableToolbar,
-  MediaEmbed,
-  Indent,
-  IndentBlock,
-  Alignment,
-  Font,
-  Undo,
-  PasteFromOffice,
-  TextTransformation,
-  HorizontalLine,
-  RemoveFormat,
-  FindAndReplace,
-  SourceEditing
-} from "ckeditor5";
-import "ckeditor5/ckeditor5.css";
 import { motion } from "framer-motion";
 
 // Custom styles
@@ -96,6 +58,25 @@ function SupabaseUploadAdapterPlugin(editor) {
   editor.plugins.get("FileRepository").createUploadAdapter = (loader) => {
     return new SupabaseUploadAdapter(loader);
   };
+}
+
+// Lightweight CKEditor container — mounts/destroys editor on open/close
+function CKEditorDirect({ data, initEditor, destroyEditor }) {
+  const containerRef = useRef(null);
+  const initializedRef = useRef(false);
+
+  useEffect(() => {
+    if (containerRef.current && !initializedRef.current) {
+      initializedRef.current = true;
+      initEditor(containerRef.current, data);
+    }
+    return () => {
+      initializedRef.current = false;
+      destroyEditor();
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return <div ref={containerRef} />;
 }
 
 export default function AdminBlogManagement() {
@@ -197,61 +178,84 @@ export default function AdminBlogManagement() {
     setUploadingImage(false);
   };
 
-  // CKEditor config with all image features
-  const editorConfig = {
-    plugins: [
-      Essentials, Bold, Italic, Underline, Strikethrough,
-      Heading, Paragraph, Link, List, TodoList,
-      BlockQuote, CodeBlock,
-      Image, ImageCaption, ImageStyle, ImageToolbar, ImageUpload, ImageResize, ImageInsert,
-      Table, TableToolbar, MediaEmbed,
-      Indent, IndentBlock, Alignment, Font,
-      Undo, PasteFromOffice, TextTransformation,
-      HorizontalLine, RemoveFormat, FindAndReplace, SourceEditing,
-      SupabaseUploadAdapterPlugin
-    ],
-    toolbar: {
-      items: [
-        'heading', '|',
-        'bold', 'italic', 'underline', 'strikethrough', '|',
-        'fontSize', 'fontColor', 'fontBackgroundColor', '|',
-        'alignment', '|',
-        'link', 'blockQuote', 'codeBlock', '|',
-        'bulletedList', 'numberedList', 'todoList', '|',
-        'outdent', 'indent', '|',
-        'insertImage', 'insertTable', 'mediaEmbed', 'horizontalLine', '|',
-        'removeFormat', 'findAndReplace', 'sourceEditing', '|',
-        'undo', 'redo'
-      ],
-      shouldNotGroupWhenFull: false
-    },
-    image: {
-      toolbar: [
-        'imageStyle:inline',
-        'imageStyle:wrapText',
-        'imageStyle:breakText',
-        '|',
-        'resizeImage',
-        '|',
-        'imageTextAlternative',
-        'toggleImageCaption'
-      ],
-      resizeOptions: [
-        { name: 'resizeImage:original', value: null, label: 'Original' },
-        { name: 'resizeImage:custom',   value: 'custom', label: 'Custom' },
-        { name: 'resizeImage:25',  value: '25',  label: '25%' },
-        { name: 'resizeImage:50',  value: '50',  label: '50%' },
-        { name: 'resizeImage:75',  value: '75',  label: '75%' },
-      ]
-    },
-    table: {
-      contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells']
-    },
-    mediaEmbed: {
-      previewsInData: true
-    },
-    placeholder: 'Write your blog post here...'
-  };
+  // Direct CKEditor initialization — no @ckeditor/ckeditor5-react wrapper
+  const editorContainerRef = useRef(null);
+  const editorInstanceRef = useRef(null);
+  const [editorReady, setEditorReady] = useState(false);
+
+  const initEditor = useCallback(async (container, initialData) => {
+    if (!container || editorInstanceRef.current) return;
+    try {
+      const ck = await import("ckeditor5");
+      await import("ckeditor5/ckeditor5.css");
+
+      const editor = await ck.ClassicEditor.create(container, {
+        plugins: [
+          ck.Essentials, ck.Bold, ck.Italic, ck.Underline, ck.Strikethrough,
+          ck.Heading, ck.Paragraph, ck.Link, ck.List, ck.TodoList,
+          ck.BlockQuote, ck.CodeBlock,
+          ck.Image, ck.ImageCaption, ck.ImageStyle, ck.ImageToolbar, ck.ImageUpload, ck.ImageResize, ck.ImageInsert,
+          ck.Table, ck.TableToolbar, ck.MediaEmbed,
+          ck.Indent, ck.IndentBlock, ck.Alignment, ck.Font,
+          ck.Undo, ck.PasteFromOffice, ck.TextTransformation,
+          ck.HorizontalLine, ck.RemoveFormat, ck.FindAndReplace, ck.SourceEditing,
+          SupabaseUploadAdapterPlugin
+        ],
+        toolbar: {
+          items: [
+            'heading', '|',
+            'bold', 'italic', 'underline', 'strikethrough', '|',
+            'fontSize', 'fontColor', 'fontBackgroundColor', '|',
+            'alignment', '|',
+            'link', 'blockQuote', 'codeBlock', '|',
+            'bulletedList', 'numberedList', 'todoList', '|',
+            'outdent', 'indent', '|',
+            'insertImage', 'insertTable', 'mediaEmbed', 'horizontalLine', '|',
+            'removeFormat', 'findAndReplace', 'sourceEditing', '|',
+            'undo', 'redo'
+          ],
+          shouldNotGroupWhenFull: false
+        },
+        image: {
+          toolbar: [
+            'imageStyle:inline', 'imageStyle:wrapText', 'imageStyle:breakText', '|',
+            'resizeImage', '|', 'imageTextAlternative', 'toggleImageCaption'
+          ],
+          resizeOptions: [
+            { name: 'resizeImage:original', value: null, label: 'Original' },
+            { name: 'resizeImage:custom', value: 'custom', label: 'Custom' },
+            { name: 'resizeImage:25', value: '25', label: '25%' },
+            { name: 'resizeImage:50', value: '50', label: '50%' },
+            { name: 'resizeImage:75', value: '75', label: '75%' },
+          ]
+        },
+        table: { contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells'] },
+        mediaEmbed: { previewsInData: true },
+        placeholder: 'Write your blog post here...',
+        initialData: initialData || ''
+      });
+
+      editorInstanceRef.current = editor;
+      editorRef.current = editor;
+      setEditorReady(true);
+
+      editor.model.document.on('change:data', () => {
+        const data = editor.getData();
+        setFormData((prev) => ({ ...prev, content: data }));
+      });
+    } catch (err) {
+      console.error("CKEditor init failed:", err);
+    }
+  }, []);
+
+  const destroyEditor = useCallback(async () => {
+    if (editorInstanceRef.current) {
+      await editorInstanceRef.current.destroy();
+      editorInstanceRef.current = null;
+      editorRef.current = null;
+      setEditorReady(false);
+    }
+  }, []);
 
   return (
     <AdminLayout>
@@ -407,23 +411,16 @@ export default function AdminBlogManagement() {
                 />
               </div>
 
-              {/* CKEditor */}
+              {/* CKEditor — initialized directly (no React wrapper) */}
               <div>
                 <Label className="mb-2 block">Content</Label>
                 <p className="text-xs text-gray-500 mb-2">
                   Click an image after inserting to see: Wrap Text (left/right), Break Text (block), resize handles, and caption toggle.
                 </p>
-                <CKEditor
-                  editor={ClassicEditor}
-                  config={editorConfig}
+                <CKEditorDirect
                   data={formData.content}
-                  onReady={(editor) => {
-                    editorRef.current = editor;
-                  }}
-                  onChange={(event, editor) => {
-                    const data = editor.getData();
-                    setFormData((prev) => ({ ...prev, content: data }));
-                  }}
+                  initEditor={initEditor}
+                  destroyEditor={destroyEditor}
                 />
               </div>
 
