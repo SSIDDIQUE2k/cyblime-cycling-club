@@ -12,10 +12,46 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
-import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import {
+  ClassicEditor,
+  Essentials,
+  Bold,
+  Italic,
+  Underline,
+  Strikethrough,
+  Heading,
+  Paragraph,
+  Link,
+  List,
+  TodoList,
+  BlockQuote,
+  CodeBlock,
+  Image,
+  ImageCaption,
+  ImageStyle,
+  ImageToolbar,
+  ImageUpload,
+  ImageResize,
+  ImageInsert,
+  Table,
+  TableToolbar,
+  MediaEmbed,
+  Indent,
+  IndentBlock,
+  Alignment,
+  Font,
+  Undo,
+  PasteFromOffice,
+  TextTransformation,
+  HorizontalLine,
+  RemoveFormat,
+  FindAndReplace,
+  SourceEditing
+} from "ckeditor5";
+import "ckeditor5/ckeditor5.css";
 import { motion } from "framer-motion";
 
-// CKEditor styles
+// Custom styles
 const editorStyles = `
   .ck-editor__editable {
     min-height: 400px !important;
@@ -28,7 +64,6 @@ const editorStyles = `
   .ck.ck-editor {
     width: 100%;
   }
-  /* Dark mode support */
   .dark .ck.ck-editor__main > .ck-editor__editable {
     background: #1f2937;
     color: #f3f4f6;
@@ -44,22 +79,16 @@ class SupabaseUploadAdapter {
   constructor(loader) {
     this.loader = loader;
   }
-
   upload() {
     return this.loader.file.then(
       (file) =>
         new Promise((resolve, reject) => {
           base44.integrations.Core.UploadFile({ file })
-            .then(({ file_url }) => {
-              resolve({ default: file_url });
-            })
-            .catch((error) => {
-              reject(error);
-            });
+            .then(({ file_url }) => resolve({ default: file_url }))
+            .catch(reject);
         })
     );
   }
-
   abort() {}
 }
 
@@ -159,19 +188,33 @@ export default function AdminBlogManagement() {
     setUploadingImage(false);
   };
 
-  // CKEditor config with image styles for wrapping
+  // CKEditor config with all image features
   const editorConfig = {
-    extraPlugins: [SupabaseUploadAdapterPlugin],
+    plugins: [
+      Essentials, Bold, Italic, Underline, Strikethrough,
+      Heading, Paragraph, Link, List, TodoList,
+      BlockQuote, CodeBlock,
+      Image, ImageCaption, ImageStyle, ImageToolbar, ImageUpload, ImageResize, ImageInsert,
+      Table, TableToolbar, MediaEmbed,
+      Indent, IndentBlock, Alignment, Font,
+      Undo, PasteFromOffice, TextTransformation,
+      HorizontalLine, RemoveFormat, FindAndReplace, SourceEditing,
+      SupabaseUploadAdapterPlugin
+    ],
     toolbar: {
       items: [
         'heading', '|',
         'bold', 'italic', 'underline', 'strikethrough', '|',
-        'link', 'blockQuote', 'code', '|',
+        'fontSize', 'fontColor', 'fontBackgroundColor', '|',
+        'alignment', '|',
+        'link', 'blockQuote', 'codeBlock', '|',
         'bulletedList', 'numberedList', 'todoList', '|',
         'outdent', 'indent', '|',
-        'uploadImage', 'insertTable', 'mediaEmbed', '|',
+        'insertImage', 'insertTable', 'mediaEmbed', 'horizontalLine', '|',
+        'removeFormat', 'findAndReplace', 'sourceEditing', '|',
         'undo', 'redo'
-      ]
+      ],
+      shouldNotGroupWhenFull: false
     },
     image: {
       toolbar: [
@@ -179,16 +222,17 @@ export default function AdminBlogManagement() {
         'imageStyle:wrapText',
         'imageStyle:breakText',
         '|',
-        'imageTextAlternative',
-        'toggleImageCaption',
+        'resizeImage',
         '|',
-        'resizeImage'
+        'imageTextAlternative',
+        'toggleImageCaption'
       ],
       resizeOptions: [
         { name: 'resizeImage:original', value: null, label: 'Original' },
-        { name: 'resizeImage:25', value: '25', label: '25%' },
-        { name: 'resizeImage:50', value: '50', label: '50%' },
-        { name: 'resizeImage:75', value: '75', label: '75%' },
+        { name: 'resizeImage:custom',   value: 'custom', label: 'Custom' },
+        { name: 'resizeImage:25',  value: '25',  label: '25%' },
+        { name: 'resizeImage:50',  value: '50',  label: '50%' },
+        { name: 'resizeImage:75',  value: '75',  label: '75%' },
       ]
     },
     table: {
@@ -257,7 +301,7 @@ export default function AdminBlogManagement() {
                         <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{post.excerpt}</p>
                         <div className="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-500">
                           <span>{post.view_count || 0} views</span>
-                          <span>•</span>
+                          <span>-</span>
                           <span>{new Date(post.created_date).toLocaleDateString()}</span>
                         </div>
                       </div>
@@ -354,11 +398,11 @@ export default function AdminBlogManagement() {
                 />
               </div>
 
-              {/* CKEditor — Rich Text with Image Wrapping */}
+              {/* CKEditor */}
               <div>
                 <Label className="mb-2 block">Content</Label>
                 <p className="text-xs text-gray-500 mb-2">
-                  Insert images via toolbar. Click an image to see wrap options: Inline, Wrap Text (left/right), or Break Text (block).
+                  Click an image after inserting to see: Wrap Text (left/right), Break Text (block), resize handles, and caption toggle.
                 </p>
                 <CKEditor
                   editor={ClassicEditor}
