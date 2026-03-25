@@ -12,30 +12,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Editor } from "@tinymce/tinymce-react";
-import "tinymce/tinymce";
-import "tinymce/models/dom";
-import "tinymce/themes/silver";
-import "tinymce/icons/default";
-import "tinymce/skins/ui/oxide/skin.min.css";
-import "tinymce/plugins/advlist";
-import "tinymce/plugins/autolink";
-import "tinymce/plugins/lists";
-import "tinymce/plugins/link";
-import "tinymce/plugins/image";
-import "tinymce/plugins/charmap";
-import "tinymce/plugins/anchor";
-import "tinymce/plugins/searchreplace";
-import "tinymce/plugins/visualblocks";
-import "tinymce/plugins/code";
-import "tinymce/plugins/fullscreen";
-import "tinymce/plugins/insertdatetime";
-import "tinymce/plugins/media";
-import "tinymce/plugins/table";
-import "tinymce/plugins/help";
-import "tinymce/plugins/wordcount";
-import "tinymce/plugins/emoticons";
-import "tinymce/plugins/emoticons/js/emojis";
-import "tinymce/plugins/codesample";
 import { motion } from "framer-motion";
 
 // TinyMCE image upload handler — uploads to Supabase Storage
@@ -312,14 +288,13 @@ export default function AdminBlogManagement() {
                 <Label className="mb-2 block">Content</Label>
                 {editDialogOpen && (
                   <Editor
+                    apiKey="2nvbekek31iqbdu5q5ananwlclze012q73ffos8tt6lw349w"
                     onInit={(evt, editor) => { editorRef.current = editor; }}
                     value={formData.content}
                     onEditorChange={(content) => setFormData((prev) => ({ ...prev, content }))}
                     init={{
                       height: 500,
                       menubar: true,
-                      skin: false,
-                      content_css: false,
                       plugins: [
                         'advlist', 'autolink', 'lists', 'link', 'image', 'charmap',
                         'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
