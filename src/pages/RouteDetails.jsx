@@ -75,6 +75,7 @@ export default function RouteDetails() {
   };
 
   const handleShare = async () => {
+    if (!route) return;
     const shareData = {
       title: route.name,
       text: `Check out this cycling route: ${route.name}`,
@@ -422,7 +423,7 @@ export default function RouteDetails() {
                                 {[...Array(5)].map((_, i) => (
                                   <Star
                                     key={i}
-                                    className={`w-4 h-4 ${i < comment.rating ? 'fill-[#ff6b35] text-[#ff6b35]' : 'text-[var(--cy-text-secondary)]'}`}
+                                    className={`w-4 h-4 ${i < (comment.rating || 0) ? 'fill-[#ff6b35] text-[#ff6b35]' : 'text-[var(--cy-text-secondary)]'}`}
                                   />
                                 ))}
                               </div>

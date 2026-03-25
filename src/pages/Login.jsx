@@ -24,8 +24,9 @@ export default function Login() {
       setLoading(true);
       setError(null);
       await base44.auth.signInWithGoogle();
+      // Google OAuth redirects to Google — page unloads, so no navigate needed
     } catch (err) {
-      setError(err.message);
+      setError(err?.message || "Google sign-in failed. Try again.");
       setLoading(false);
     }
   };
@@ -61,17 +62,37 @@ export default function Login() {
           setLoading(false);
           return;
         }
-        await base44.auth.signUp(email, password);
-        setSuccessMessage("Account created! Check your email to confirm your address, then sign in.");
+        const result = await base44.auth.signUp(email, password);
+        // If Supabase requires email confirmation, user won't have a session yet
+        if (result?.user && !result.session) {
+          setSuccessMessage("Account created! Check your email to confirm your address, then sign in.");
+        } else {
+          setSuccessMessage("Account created! You can now sign in.");
+        }
         setIsSignUp(false);
         setPassword("");
         setConfirmPassword("");
       } else {
-        await base44.auth.signInWithEmail(email, password);
-        navigate("/");
+        const result = await base44.auth.signInWithEmail(email, password);
+        // signInWithPassword returns { user, session } on success
+        // Wait a tick for onAuthStateChange to fire and update context
+        if (result?.session) {
+          // Small delay so AuthContext picks up the SIGNED_IN event
+          await new Promise((resolve) => setTimeout(resolve, 300));
+          navigate("/");
+        } else {
+          setError("Sign in failed — no session returned. Check your email for a confirmation link.");
+        }
       }
     } catch (err) {
-      setError(err.message);
+      const msg = err?.message || err?.error_description || String(err);
+      if (msg.includes("Invalid login credentials")) {
+        setError("Invalid email or password. Double-check your credentials or create a new account.");
+      } else if (msg.includes("Email not confirmed")) {
+        setError("Your email isn't confirmed yet. Check your inbox for the confirmation link.");
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }

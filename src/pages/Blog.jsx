@@ -56,10 +56,10 @@ export default function Blog() {
   // Search filter
   if (searchQuery.trim()) {
     const query = searchQuery.toLowerCase();
-    filteredPosts = filteredPosts.filter(p => 
-      p.title.toLowerCase().includes(query) ||
+    filteredPosts = filteredPosts.filter(p =>
+      (p.title || "").toLowerCase().includes(query) ||
       (p.excerpt && p.excerpt.toLowerCase().includes(query)) ||
-      (p.tags && p.tags.some(tag => tag.toLowerCase().includes(query)))
+      (p.tags && p.tags.some(tag => (tag || "").toLowerCase().includes(query)))
     );
   }
   

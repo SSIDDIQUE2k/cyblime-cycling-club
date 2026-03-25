@@ -66,7 +66,7 @@ const ReportCard = ({ report, onApprove, onReject, onView }) => {
                     {report.reason}
                   </Badge>
                   <Badge variant="outline" className="text-xs dark:border-white/10 dark:text-gray-400">
-                    {report.content_type.replace('_', ' ')}
+                    {(report.content_type || "").replace('_', ' ')}
                   </Badge>
                 </div>
                 <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
@@ -140,7 +140,8 @@ export default function AdminModeration() {
     mutationFn: ({ id, status }) => base44.entities.Report.update(id, { status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['adminReports'] });
-    }
+    },
+    onError: (err) => alert("Failed to update report: " + (err?.message || "Please try again."))
   });
 
   const filteredReports = reports.filter(report => {

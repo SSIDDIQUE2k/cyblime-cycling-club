@@ -20,7 +20,8 @@ export default function AdminUserManagement() {
 
   const updateRoleMutation = useMutation({
     mutationFn: ({ id, role }) => base44.entities.User.update(id, { role }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['adminUsers'] })
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['adminUsers'] }),
+    onError: (err) => alert("Failed to update role: " + (err?.message || "Please try again."))
   });
 
   const filtered = users.filter(u => {

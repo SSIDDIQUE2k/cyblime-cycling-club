@@ -34,7 +34,7 @@ import { Badge } from "@/components/ui/badge";
 export default function AdminLayout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, isLoadingAuth } = useAuth();
+  const { user, isLoadingAuth, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
@@ -201,7 +201,7 @@ export default function AdminLayout({ children }) {
             </div>
             {sidebarOpen && (
               <Button
-                onClick={() => base44.auth.logout()}
+                onClick={() => logout()}
                 variant="outline"
                 className="w-full justify-start text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                 size="sm"

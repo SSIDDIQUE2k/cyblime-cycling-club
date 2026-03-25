@@ -82,7 +82,7 @@ export default function MyEvents() {
     mutationFn: (eventData) => base44.entities.Event.create({
       ...eventData,
       organizer_email: user.email,
-      organizer_name: user.full_name || user.email.split('@')[0]
+      organizer_name: user.full_name || user.email?.split('@')[0] || "User"
     }),
     onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ['myEvents'] });
@@ -93,7 +93,8 @@ export default function MyEvents() {
       if (user) {
         await awardPoints(user.email, 'EVENT_CREATION');
       }
-    }
+    },
+    onError: (err) => alert("Failed to create event: " + (err?.message || "Please try again."))
   });
 
   const updateEventMutation = useMutation({
@@ -104,7 +105,8 @@ export default function MyEvents() {
       setEditingEvent(null);
       setCreateDialogOpen(false);
       resetForm();
-    }
+    },
+    onError: (err) => alert("Failed to update event: " + (err?.message || "Please try again."))
   });
 
   const deleteEventMutation = useMutation({
@@ -112,7 +114,8 @@ export default function MyEvents() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['myEvents'] });
       queryClient.invalidateQueries({ queryKey: ['events'] });
-    }
+    },
+    onError: (err) => alert("Failed to delete event: " + (err?.message || "Please try again."))
   });
 
   const handleImageUpload = async (e) => {

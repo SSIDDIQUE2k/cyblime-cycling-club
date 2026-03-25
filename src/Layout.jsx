@@ -20,7 +20,7 @@ export default function Layout({ children }) {
   const currentPageName = location.pathname === "/" ? "Home" : location.pathname.slice(1);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { settings } = useSiteSettings({
     social_instagram: "",
     social_facebook: "",
@@ -171,7 +171,7 @@ export default function Layout({ children }) {
                       )}
                       <DropdownMenuSeparator className="bg-[var(--cy-border-strong)]" />
                       <DropdownMenuItem
-                        onClick={() => base44.auth.logout()}
+                        onClick={() => logout()}
                         className="cursor-pointer text-red-400 hover:text-red-300"
                       >
                         <LogOut className="w-4 h-4 mr-2" />
@@ -282,7 +282,7 @@ export default function Layout({ children }) {
                       </Link>
                     )}
                     <button
-                      onClick={() => base44.auth.logout()}
+                      onClick={() => logout()}
                       className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/10 w-full text-left"
                     >
                       <LogOut className="w-5 h-5" />

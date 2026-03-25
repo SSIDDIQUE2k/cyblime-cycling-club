@@ -177,6 +177,10 @@ const auth = {
       } else {
         window.location.href = '/';
       }
+    }).catch((err) => {
+      console.error("Sign out failed:", err);
+      // Force redirect even on error to clear UI state
+      window.location.href = '/';
     });
   },
 
@@ -223,13 +227,18 @@ const auth = {
     });
     if (error) throw error;
 
-    // Create user profile
-    if (data.user) {
-      await supabase.from('user_profiles').insert({
-        user_id: data.user.id,
-        email: data.user.email,
-        role: 'user',
-      });
+    // Create user profile — only if we have a confirmed session
+    // (if email confirmation is required, data.session will be null)
+    if (data.user && data.session) {
+      try {
+        await supabase.from('user_profiles').insert({
+          user_id: data.user.id,
+          email: data.user.email,
+          role: 'user',
+        });
+      } catch (profileErr) {
+        console.warn('Profile creation deferred:', profileErr.message);
+      }
     }
 
     return data;

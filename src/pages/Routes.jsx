@@ -338,8 +338,8 @@ export default function Routes() {
 
   const filteredRoutes = routes
     .filter(route => {
-      const matchesSearch = route.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           route.description?.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = (route.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           (route.description || "").toLowerCase().includes(searchQuery.toLowerCase());
       const matchesDifficulty = filterDifficulty === "all" || route.difficulty === filterDifficulty;
       const matchesSurface = filterSurface === "all" || route.surface_type === filterSurface;
       

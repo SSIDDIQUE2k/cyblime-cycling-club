@@ -257,7 +257,7 @@ export default function Events() {
     const matchesDateTo = !advancedFilters.dateTo || eventDate <= new Date(advancedFilters.dateTo);
 
     const matchesLocation = !advancedFilters.location ||
-      event.location.toLowerCase().includes(advancedFilters.location.toLowerCase());
+      (event.location || "").toLowerCase().includes(advancedFilters.location.toLowerCase());
 
     return matchesSearch && matchesType && matchesLevel &&
       matchesDateFrom && matchesDateTo && matchesLocation;

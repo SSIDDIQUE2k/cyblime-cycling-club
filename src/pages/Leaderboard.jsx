@@ -179,7 +179,7 @@ export default function Leaderboard() {
                       <div className="relative mb-2">
                         <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#ff6b35] to-[#e55a2b] flex items-center justify-center border-4 border-white shadow-xl shadow-black/20">
                           <span className="text-white font-bold text-2xl">
-                            {item.user.full_name?.charAt(0) || item.user.email.charAt(0).toUpperCase()}
+                            {item.user.full_name?.charAt(0) || item.user.email?.charAt(0)?.toUpperCase() || "?"}
                           </span>
                         </div>
                         {actualRank === 1 && (
@@ -187,7 +187,7 @@ export default function Leaderboard() {
                         )}
                       </div>
                       <p className="font-semibold text-sm text-center mb-1">
-                        {item.user.full_name || item.user.email.split('@')[0]}
+                        {item.user.full_name || item.user.email?.split('@')[0] || "Anonymous"}
                       </p>
                       <div className={`${heights[index]} ${colors[index]} w-24 rounded-t-lg flex items-center justify-center flex-col px-2`}>
                         <p className="text-2xl font-bold text-[var(--cy-text)]">{item.total_points}</p>

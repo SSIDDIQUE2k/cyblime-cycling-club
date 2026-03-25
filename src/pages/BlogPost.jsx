@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { base44 } from "@/api/base44Client";
 import { useAuth } from "@/lib/AuthContext";
@@ -36,7 +36,8 @@ export default function BlogPost() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['blogPost', postId] });
       queryClient.invalidateQueries({ queryKey: ['blogPosts'] });
-    }
+    },
+    onError: (err) => console.error("Failed to increment view:", err)
   });
 
   const createCommentMutation = useMutation({
@@ -44,7 +45,8 @@ export default function BlogPost() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['blogComments', postId] });
       setCommentText("");
-    }
+    },
+    onError: (err) => alert("Failed to post comment: " + (err?.message || "Please try again."))
   });
 
   const handleSubmitComment = (e) => {
@@ -67,14 +69,15 @@ export default function BlogPost() {
         incrementViewMutation.mutate();
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [post?.id]);
 
   // Parse content and insert images at specified positions
   const renderContentWithImages = () => {
-    if (!post.content) return null;
+    if (!post?.content) return null;
 
     // Split content into paragraphs
-    const paragraphs = post.content.split('\n\n').filter(p => p.trim());
+    const paragraphs = (post.content || "").split('\n\n').filter(p => p.trim());
     const contentImages = post.content_images || [];
     
     // Create a map of position -> image

@@ -57,15 +57,25 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Single DB call — just fetch the profile row
+  // Fetch the profile row — create one if it doesn't exist yet
   const loadProfile = async (authUser) => {
     try {
       setIsLoadingAuth(true);
-      const { data: profile } = await supabase
+      let { data: profile, error } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('user_id', authUser.id)
         .single();
+
+      // If no profile exists (first sign-in after email confirmation), create one
+      if (error && error.code === 'PGRST116') {
+        const { data: newProfile } = await supabase
+          .from('user_profiles')
+          .insert({ user_id: authUser.id, email: authUser.email, role: 'user' })
+          .select()
+          .single();
+        profile = newProfile;
+      }
 
       setUser({
         id: authUser.id,
