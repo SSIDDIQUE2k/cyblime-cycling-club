@@ -333,7 +333,7 @@ export default function Routes() {
   const { data: routes = [], isLoading, refetch: refetchRoutes } = useQuery({
     queryKey: ['routes'],
     queryFn: () => base44.entities.Route.list('-created_date'),
-    initialData: []
+
   });
 
   const filteredRoutes = routes

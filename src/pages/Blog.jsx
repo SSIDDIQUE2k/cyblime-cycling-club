@@ -27,8 +27,7 @@ export default function Blog() {
 
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ['blogPosts'],
-    queryFn: () => base44.entities.BlogPost.filter({ published: true }, '-created_date'),
-    initialData: []
+    queryFn: () => base44.entities.BlogPost.filter({ published: true }, '-created_date')
   });
 
   const categories = ["news", "tips", "stories", "gear", "training"];

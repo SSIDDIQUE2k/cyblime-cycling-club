@@ -104,13 +104,13 @@ export default function CyclingHub() {
   const { data: routes = [], isLoading: routesLoading } = useQuery({
     queryKey: ['routes'],
     queryFn: () => base44.entities.Route.list('-created_date'),
-    initialData: []
+
   });
 
   const { data: events = [], isLoading: eventsLoading } = useQuery({
     queryKey: ['hubEvents'],
     queryFn: () => base44.entities.Event.list('-date'),
-    initialData: []
+
   });
 
   const handleTabChange = (value) => {

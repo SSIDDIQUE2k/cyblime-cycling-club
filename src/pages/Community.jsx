@@ -60,7 +60,7 @@ export default function Community() {
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ['forumPosts'],
     queryFn: () => base44.entities.ForumPost.list('-created_date'),
-    initialData: []
+
   });
 
   const { data: replies = [] } = useQuery({
