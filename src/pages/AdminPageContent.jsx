@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import AdminLayout from "../components/admin/AdminLayout";
+import { Upload } from "lucide-react";
 import {
   Save,
   FileText,
@@ -301,6 +302,72 @@ function ArrayEditor({ items, onChange, renderItem, addLabel, defaultItem }) {
   );
 }
 
+// Reusable image upload field — pick file from computer, uploads to Supabase Storage
+function ImageUploadField({ value, onChange, placeholder = "Image URL" }) {
+  const fileRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setUploading(true);
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      onChange(file_url);
+    } catch (err) {
+      alert("Upload failed: " + (err.message || err));
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex gap-2">
+        <Input
+          value={value || ""}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className="dark:bg-gray-900 dark:border-white/10 flex-1"
+        />
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileSelect}
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={uploading}
+          onClick={() => fileRef.current?.click()}
+          className="flex-shrink-0 gap-1"
+        >
+          <Upload className="w-4 h-4" />
+          {uploading ? "Uploading..." : "Upload"}
+        </Button>
+        {value && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => onChange("")}
+            className="text-red-500 hover:text-red-600 flex-shrink-0"
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
+        )}
+      </div>
+      {value && (
+        <img src={value} alt="Preview" className="h-24 w-auto rounded-lg object-cover border border-gray-200 dark:border-white/10" />
+      )}
+    </div>
+  );
+}
+
 function PageEditor({ pageKey, content, onSave, saving }) {
   const [localContent, setLocalContent] = useState(content);
   const [expandedSections, setExpandedSections] = useState({});
@@ -369,11 +436,10 @@ function PageEditor({ pageKey, content, onSave, saving }) {
                       placeholder="Slide subheading"
                       className="dark:bg-gray-900 dark:border-white/10"
                     />
-                    <Input
+                    <ImageUploadField
                       value={item.image_url}
-                      onChange={(e) => update(index, "image_url", e.target.value)}
-                      placeholder="Background image URL (optional)"
-                      className="dark:bg-gray-900 dark:border-white/10"
+                      onChange={(url) => update(index, "image_url", url)}
+                      placeholder="Background image (upload or paste URL)"
                     />
                   </>
                 )}
@@ -426,11 +492,10 @@ function PageEditor({ pageKey, content, onSave, saving }) {
                 defaultItem={{ url: "", alt: "" }}
                 renderItem={(item, index, update) => (
                   <>
-                    <Input
+                    <ImageUploadField
                       value={item.url}
-                      onChange={(e) => update(index, "url", e.target.value)}
-                      placeholder="Image URL"
-                      className="dark:bg-gray-900 dark:border-white/10"
+                      onChange={(url) => update(index, "url", url)}
+                      placeholder="Upload gallery image"
                     />
                     <Input
                       value={item.alt}
@@ -682,11 +747,10 @@ function PageEditor({ pageKey, content, onSave, saving }) {
                 defaultItem={{ url: "", alt: "" }}
                 renderItem={(item, index, update) => (
                   <>
-                    <Input
+                    <ImageUploadField
                       value={item.url}
-                      onChange={(e) => update(index, "url", e.target.value)}
-                      placeholder="Image URL"
-                      className="dark:bg-gray-900 dark:border-white/10"
+                      onChange={(url) => update(index, "url", url)}
+                      placeholder="Upload team photo"
                     />
                     <Input
                       value={item.alt}
