@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import AdminLayout from "../components/admin/AdminLayout";
@@ -11,22 +11,64 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Editor } from "@tinymce/tinymce-react";
 import { motion } from "framer-motion";
 
-// TinyMCE image upload handler — uploads to Supabase Storage
-function tinymceImageUpload(blobInfo) {
-  return new Promise((resolve, reject) => {
-    const file = blobInfo.blob();
-    base44.integrations.Core.UploadFile({ file })
-      .then(({ file_url }) => resolve(file_url))
-      .catch((err) => reject("Upload failed: " + err.message));
-  });
+// Wysi editor wrapper — initializes the CDN-loaded Wysi on a textarea
+function WysiEditor({ value, onChange, visible }) {
+  const textareaRef = useRef(null);
+  const wysiInitialized = useRef(false);
+
+  useEffect(() => {
+    if (!visible || !textareaRef.current || wysiInitialized.current) return;
+    if (typeof window.Wysi === 'undefined') return;
+
+    // Small delay to ensure the DOM is ready inside the dialog
+    const timer = setTimeout(() => {
+      try {
+        window.Wysi({
+          el: textareaRef.current,
+          height: 400,
+          autoGrow: true,
+          tools: [
+            'format', '|',
+            'bold', 'italic', 'underline', 'strike', '|',
+            { label: 'Alignment', items: ['alignLeft', 'alignCenter', 'alignRight', 'alignJustify'] }, '|',
+            'ul', 'ol', '|',
+            'indent', 'outdent', '|',
+            'link', 'image', 'hr', 'quote', '|',
+            'removeFormat'
+          ],
+          onChange: (content) => {
+            onChange(content);
+          }
+        });
+        wysiInitialized.current = true;
+      } catch (err) {
+        console.error('Wysi init error:', err);
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [visible, onChange]);
+
+  // Reset when dialog closes
+  useEffect(() => {
+    if (!visible) {
+      wysiInitialized.current = false;
+    }
+  }, [visible]);
+
+  return (
+    <textarea
+      ref={textareaRef}
+      defaultValue={value || ""}
+      style={{ minHeight: '400px', width: '100%' }}
+    />
+  );
 }
 
 export default function AdminBlogManagement() {
   const queryClient = useQueryClient();
-  const editorRef = useRef(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -283,48 +325,14 @@ export default function AdminBlogManagement() {
                 />
               </div>
 
-              {/* TinyMCE Editor */}
+              {/* Wysi Rich Text Editor */}
               <div>
                 <Label className="mb-2 block">Content</Label>
-                {editDialogOpen && (
-                  <Editor
-                    apiKey="2nvbekek31iqbdu5q5ananwlclze012q73ffos8tt6lw349w"
-                    onInit={(evt, editor) => { editorRef.current = editor; }}
-                    value={formData.content}
-                    onEditorChange={(content) => setFormData((prev) => ({ ...prev, content }))}
-                    init={{
-                      height: 500,
-                      menubar: true,
-                      plugins: [
-                        'advlist', 'autolink', 'lists', 'link', 'image', 'charmap',
-                        'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                        'insertdatetime', 'media', 'table', 'help', 'wordcount',
-                        'emoticons', 'codesample'
-                      ],
-                      toolbar: 'undo redo | blocks | bold italic underline strikethrough | ' +
-                        'forecolor backcolor | alignleft aligncenter alignright alignjustify | ' +
-                        'bullist numlist outdent indent | link image media table | ' +
-                        'removeformat code fullscreen help',
-                      images_upload_handler: tinymceImageUpload,
-                      automatic_uploads: true,
-                      image_advtab: true,
-                      image_caption: true,
-                      image_title: true,
-                      media_live_embeds: true,
-                      content_style: `
-                        body {
-                          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                          font-size: 16px;
-                          line-height: 1.8;
-                          padding: 16px;
-                        }
-                        img { max-width: 100%; border-radius: 8px; }
-                      `,
-                      promotion: false,
-                      branding: false
-                    }}
-                  />
-                )}
+                <WysiEditor
+                  value={formData.content}
+                  onChange={(content) => setFormData((prev) => ({ ...prev, content }))}
+                  visible={editDialogOpen}
+                />
               </div>
 
               {/* Category + Tags + Publish */}
