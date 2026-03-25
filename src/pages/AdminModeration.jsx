@@ -51,7 +51,7 @@ const ReportCard = ({ report, onApprove, onReject, onView }) => {
       className="group"
     >
       <Card className="admin-card dark:bg-gray-800/50 dark:border-white/5 hover:shadow-lg transition-all duration-300">
-        <CardContent className="p-6">
+        <CardContent className="px-3 sm:px-6 py-3 sm:py-4">
           <div className="flex items-start gap-4">
             {/* Icon */}
             <div className={`w-12 h-12 rounded-2xl ${typeColors[report.content_type]} flex items-center justify-center flex-shrink-0`}>
@@ -157,9 +157,9 @@ export default function AdminModeration() {
     <AdminLayout>
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Moderation Queue</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">Moderation Queue</h1>
             <p className="text-gray-600 dark:text-gray-400">Review and manage reported content</p>
           </div>
           <div className="flex items-center gap-4">
@@ -215,8 +215,8 @@ export default function AdminModeration() {
 
         {/* Filters */}
         <Card className="admin-card dark:bg-gray-800/50 dark:border-white/5">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
+          <CardContent className="px-3 sm:px-6 py-3 sm:py-4">
+            <div className="flex items-center gap-4 flex-wrap">
               <Filter className="w-5 h-5 text-gray-400" />
               <div className="flex-1 flex gap-4">
                 <Select value={filter} onValueChange={setFilter}>
@@ -285,13 +285,13 @@ export default function AdminModeration() {
 
         {/* Report Detail Dialog */}
         <Dialog open={!!selectedReport} onOpenChange={() => setSelectedReport(null)}>
-          <DialogContent className="max-w-lg dark:bg-gray-800 dark:border-white/10">
+          <DialogContent className="max-w-[95vw] sm:max-w-lg dark:bg-gray-800 dark:border-white/10">
             <DialogHeader>
               <DialogTitle className="dark:text-white">Report Details</DialogTitle>
             </DialogHeader>
             {selectedReport && (
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-gray-500 dark:text-gray-400">Type</p>
                     <p className="font-medium dark:text-white">{selectedReport.content_type?.replace('_', ' ')}</p>

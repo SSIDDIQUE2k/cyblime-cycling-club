@@ -194,12 +194,12 @@ export default function AdminBlogManagement() {
       `}</style>
       <div className="max-w-7xl mx-auto space-y-6">
         <div>
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Blog Posts</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">Blog Posts</h1>
           <p className="text-gray-600 dark:text-gray-400">Create and manage blog content</p>
         </div>
 
         <Card className="admin-card dark:bg-gray-800/50 dark:border-white/5">
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-3">
             <CardTitle className="dark:text-white">All Posts</CardTitle>
             <Button
               onClick={() => {
@@ -223,8 +223,8 @@ export default function AdminBlogManagement() {
               transition={{ delay: index * 0.05 }}
             >
               <Card className="admin-card dark:bg-gray-800/50 dark:border-white/5 hover:shadow-lg transition-all">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
+                <CardContent className="px-3 sm:px-6 py-3 sm:py-4">
+                  <div className="flex items-center justify-between flex-wrap gap-3">
                     <div className="flex items-center gap-4 flex-1 min-w-0 mr-4">
                       {post.featured_image && (
                         <img
@@ -282,7 +282,7 @@ export default function AdminBlogManagement() {
 
         {/* Post Editor Dialog */}
         <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-          <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto">
+          <DialogContent className="max-w-[95vw] sm:max-w-5xl max-h-[95vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingPost ? 'Edit Post' : 'Create Post'}</DialogTitle>
             </DialogHeader>
@@ -300,7 +300,7 @@ export default function AdminBlogManagement() {
               </div>
 
               {/* Featured Image + Excerpt side by side */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label>Featured Image</Label>
                   <Input
@@ -355,13 +355,13 @@ export default function AdminBlogManagement() {
                     modules={quillModules}
                     formats={quillFormats}
                     placeholder="Write your blog post content here..."
-                    style={{ minHeight: '450px' }}
+                    style={{ minHeight: '250px' }}
                   />
                 )}
               </div>
 
               {/* Category + Tags + Publish */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <Label>Category</Label>
                   <Select value={formData.category} onValueChange={(val) => setFormData({...formData, category: val})}>

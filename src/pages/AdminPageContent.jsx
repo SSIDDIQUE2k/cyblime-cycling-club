@@ -531,7 +531,7 @@ function PageEditor({ pageKey, content, onSave, saving }) {
                   className="dark:bg-gray-900 dark:border-white/10"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <Label className="dark:text-gray-300">Button Text</Label>
                   <Input
@@ -632,7 +632,7 @@ function PageEditor({ pageKey, content, onSave, saving }) {
           <SectionHeader title="Our Story" sectionKey="story" icon={FileText} />
           {expandedSections.story && (
             <CardContent className="pt-0 space-y-3">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <Label className="dark:text-gray-300">Founded Year</Label>
                   <Input
@@ -810,7 +810,7 @@ function PageEditor({ pageKey, content, onSave, saving }) {
                   addLabel="Add Stat"
                   defaultItem={{ value: "", label: "" }}
                   renderItem={(item, index, update) => (
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       <Input
                         value={item.value}
                         onChange={(e) => update(index, "value", e.target.value)}
@@ -852,7 +852,7 @@ function PageEditor({ pageKey, content, onSave, saving }) {
                       <Label className="text-sm dark:text-gray-300">Most Popular</Label>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <Label className="dark:text-gray-300">Name</Label>
                       <Input
@@ -878,7 +878,7 @@ function PageEditor({ pageKey, content, onSave, saving }) {
                       />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <Label className="dark:text-gray-300">Description</Label>
                       <Input
@@ -1270,9 +1270,9 @@ export default function AdminPageContent() {
   return (
     <AdminLayout>
       <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Page Content</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Page Content</h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1">Edit the content displayed on your website pages</p>
           </div>
           {saveSuccess && (

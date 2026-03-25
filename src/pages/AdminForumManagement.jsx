@@ -66,7 +66,7 @@ export default function AdminForumManagement() {
     <AdminLayout>
       <div className="max-w-7xl mx-auto space-y-6">
         <div>
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Forum Management</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">Forum Management</h1>
           <p className="text-gray-600 dark:text-gray-400">Moderate forum posts and replies</p>
         </div>
 
@@ -85,8 +85,8 @@ export default function AdminForumManagement() {
               transition={{ delay: index * 0.05 }}
             >
               <Card className="admin-card dark:bg-gray-800/50 dark:border-white/5 hover:shadow-lg transition-all">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between">
+                <CardContent className="px-3 sm:px-6 py-3 sm:py-4">
+                  <div className="flex items-start justify-between flex-wrap gap-3">
                     <div className="flex-1 min-w-0 mr-4">
                       <div className="flex items-center gap-3 mb-2 flex-wrap">
                         <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{post.title}</h3>
@@ -154,8 +154,8 @@ export default function AdminForumManagement() {
               transition={{ delay: index * 0.05 }}
             >
               <Card className="admin-card dark:bg-gray-800/50 dark:border-white/5 hover:shadow-lg transition-all">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between">
+                <CardContent className="px-3 sm:px-6 py-3 sm:py-4">
+                  <div className="flex items-start justify-between flex-wrap gap-3">
                     <div className="flex-1 min-w-0 mr-4">
                       <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{reply.content}</p>
                       <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-500">

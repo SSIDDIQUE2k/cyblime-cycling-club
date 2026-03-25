@@ -27,11 +27,11 @@ const StatCard = ({ icon: Icon, title, value, change, trend, color }) => (
     className="relative overflow-hidden"
   >
     <Card className="admin-card dark:bg-gray-800/50 dark:border-white/5 hover:shadow-xl transition-all duration-300">
-      <CardContent className="p-6">
+      <CardContent className="px-3 sm:px-6 py-3 sm:py-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">{title}</p>
-            <h3 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">{value}</h3>
+            <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-3">{value}</h3>
             {change && (
               <div className="flex items-center gap-2">
                 {trend === 'up' ? (
@@ -196,7 +196,7 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
         <div>
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Dashboard</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">Dashboard</h1>
           <p className="text-gray-600 dark:text-gray-400">Welcome back! Here's what's happening today.</p>
         </div>
 
@@ -242,7 +242,7 @@ export default function AdminDashboard() {
             <CardTitle className="dark:text-white">Quick Actions</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               <QuickAction
                 icon={FileText}
                 label="New Post"
@@ -333,7 +333,7 @@ export default function AdminDashboard() {
             <CardTitle className="dark:text-white">Content Overview</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
               <div className="text-center">
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mx-auto mb-3">
                   <Map className="w-8 h-8 text-white" />

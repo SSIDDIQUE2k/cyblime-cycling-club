@@ -36,12 +36,12 @@ export default function AdminUserManagement() {
     <AdminLayout>
       <div className="max-w-6xl mx-auto space-y-6">
         <div>
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">User Management</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">User Management</h1>
           <p className="text-gray-600 dark:text-gray-400">Manage member roles and permissions</p>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Card className="dark:bg-gray-800/50 dark:border-white/5">
             <CardContent className="p-5 flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center">
@@ -79,7 +79,7 @@ export default function AdminUserManagement() {
 
         {/* Filters */}
         <div className="flex gap-3 flex-wrap">
-          <div className="relative flex-1 min-w-[200px]">
+          <div className="relative flex-1 min-w-0 sm:min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               placeholder="Search by name or email..."
@@ -111,7 +111,7 @@ export default function AdminUserManagement() {
             ) : (
               <div className="divide-y divide-gray-100 dark:divide-white/5">
                 {filtered.map((u) => (
-                  <div key={u.id} className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                  <div key={u.id} className="flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors flex-wrap gap-3">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#c9a227] to-[#b89123] flex items-center justify-center flex-shrink-0">
                         <span className="text-white font-bold text-sm">

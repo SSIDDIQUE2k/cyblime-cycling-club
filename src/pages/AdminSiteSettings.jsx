@@ -124,9 +124,9 @@ export default function AdminSiteSettings() {
   return (
     <AdminLayout>
       <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Site Settings</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Site Settings</h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1">Configure global settings for your website</p>
           </div>
           <div className="flex items-center gap-3">
@@ -156,7 +156,7 @@ export default function AdminSiteSettings() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label className="dark:text-gray-300">Site Name</Label>
                 <Input
@@ -174,7 +174,7 @@ export default function AdminSiteSettings() {
                 />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label className="dark:text-gray-300">Logo URL</Label>
                 <Input
@@ -215,7 +215,7 @@ export default function AdminSiteSettings() {
                 className="dark:bg-gray-900 dark:border-white/10"
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label className="dark:text-gray-300">Phone</Label>
                 <Input
@@ -304,7 +304,7 @@ export default function AdminSiteSettings() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <Label className="dark:text-gray-300">Primary Color</Label>
                 <div className="flex items-center gap-2 mt-1">

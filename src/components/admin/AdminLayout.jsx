@@ -277,7 +277,7 @@ export default function AdminLayout({ children }) {
         <header className={`sticky top-0 z-30 admin-topbar ${
           darkMode ? 'bg-gray-900/80 border-b border-white/5' : 'bg-white/80 border-b border-gray-200'
         } backdrop-blur-xl`}>
-          <div className="flex items-center justify-between px-6 py-4">
+          <div className="flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setMobileMenuOpen(true)}
@@ -348,7 +348,7 @@ export default function AdminLayout({ children }) {
         </header>
 
         {/* Page Content */}
-        <main className="p-6">
+        <main className="p-3 sm:p-6">
           {children}
         </main>
       </div>

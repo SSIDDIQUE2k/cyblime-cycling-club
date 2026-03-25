@@ -144,12 +144,12 @@ export default function AdminRouteManagement() {
     <AdminLayout>
       <div className="max-w-7xl mx-auto space-y-6">
         <div>
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Routes</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">Routes</h1>
           <p className="text-gray-600 dark:text-gray-400">Manage cycling routes</p>
         </div>
 
         <Card className="admin-card dark:bg-gray-800/50 dark:border-white/5">
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-3">
             <CardTitle className="dark:text-white">All Routes</CardTitle>
             <Button
               onClick={() => {
@@ -173,8 +173,8 @@ export default function AdminRouteManagement() {
               transition={{ delay: index * 0.05 }}
             >
               <Card className="admin-card dark:bg-gray-800/50 dark:border-white/5 hover:shadow-lg transition-all">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
+                <CardContent className="px-3 sm:px-6 py-3 sm:py-4">
+                  <div className="flex items-center justify-between flex-wrap gap-3">
                     <div className="flex-1 min-w-0 mr-4">
                       <div className="flex items-center gap-3 mb-2 flex-wrap">
                         <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{route.name}</h3>
@@ -203,12 +203,12 @@ export default function AdminRouteManagement() {
         </div>
 
         <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingRoute ? 'Edit Route' : 'Create Route'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="col-span-2">
                   <Label>Route Name</Label>
                   <Input

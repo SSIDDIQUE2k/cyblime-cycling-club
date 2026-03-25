@@ -45,7 +45,7 @@ function TestimonialForm({ testimonial, onSave, onCancel, saving }) {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <Label className="dark:text-gray-300">Full Name *</Label>
           <Input
@@ -66,7 +66,7 @@ function TestimonialForm({ testimonial, onSave, onCancel, saving }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <Label className="dark:text-gray-300">Company / Affiliation</Label>
           <Input
@@ -98,7 +98,7 @@ function TestimonialForm({ testimonial, onSave, onCancel, saving }) {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <Label className="dark:text-gray-300">Avatar URL</Label>
           <Input
@@ -218,9 +218,9 @@ export default function AdminTestimonials() {
   return (
     <AdminLayout>
       <div className="max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Testimonials</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Testimonials</h1>
             <p className="text-gray-600 dark:text-gray-400 mt-1">Manage member testimonials displayed on your site</p>
           </div>
           <Button
@@ -252,7 +252,7 @@ export default function AdminTestimonials() {
           <div className="grid gap-4">
             {testimonials.map((testimonial) => (
               <Card key={testimonial.id} className="dark:bg-gray-800/50 dark:border-white/5 hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
+                <CardContent className="px-3 sm:px-6 py-3 sm:py-4">
                   <div className="flex items-start gap-4">
                     {/* Avatar */}
                     <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#c9a227] to-[#b89123] flex items-center justify-center flex-shrink-0">
@@ -343,7 +343,7 @@ export default function AdminTestimonials() {
 
         {/* Add/Edit Dialog */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="max-w-lg dark:bg-gray-900 dark:border-white/10">
+          <DialogContent className="max-w-[95vw] sm:max-w-lg dark:bg-gray-900 dark:border-white/10">
             <DialogHeader>
               <DialogTitle className="dark:text-white">
                 {editingTestimonial?.id ? "Edit Testimonial" : "Add Testimonial"}

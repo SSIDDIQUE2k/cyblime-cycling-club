@@ -113,9 +113,9 @@ export default function AdminChallengeManagement() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Challenge Management</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Challenge Management</h1>
             <p className="text-gray-600 dark:text-gray-400">Create and manage community challenges</p>
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -125,7 +125,7 @@ export default function AdminChallengeManagement() {
                 New Challenge
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-[95vw] sm:max-w-2xl">
               <DialogHeader>
                 <DialogTitle>{editingChallenge ? "Edit Challenge" : "Create Challenge"}</DialogTitle>
               </DialogHeader>
@@ -149,7 +149,7 @@ export default function AdminChallengeManagement() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label>Type</Label>
                     <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
@@ -179,7 +179,7 @@ export default function AdminChallengeManagement() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label>Start Date</Label>
                     <Input
@@ -199,7 +199,7 @@ export default function AdminChallengeManagement() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label>Goal Value</Label>
                     <Input
@@ -245,8 +245,8 @@ export default function AdminChallengeManagement() {
         <div className="grid gap-4">
           {challenges.map((challenge) => (
             <Card key={challenge.id}>
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between">
+              <CardContent className="px-3 sm:px-6 py-3 sm:py-4">
+                <div className="flex items-start justify-between flex-wrap gap-3">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <Trophy className="w-5 h-5 text-[#c9a227]" />
@@ -258,7 +258,7 @@ export default function AdminChallengeManagement() {
                     </div>
                     <p className="text-gray-600 mb-4">{challenge.description}</p>
                     
-                    <div className="grid grid-cols-4 gap-4 text-sm">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                       <div>
                         <p className="text-gray-500">Goal</p>
                         <p className="font-semibold">{challenge.goal_value} {challenge.goal_metric}</p>
