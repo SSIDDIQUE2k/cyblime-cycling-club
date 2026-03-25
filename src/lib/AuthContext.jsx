@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect, useRef } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import { base44 } from '@/api/supabaseClient';
 import { supabase } from '@/api/supabaseClient';
 
@@ -9,53 +9,41 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
   const [authError, setAuthError] = useState(null);
-  const checkedRef = useRef(false);
 
   useEffect(() => {
-    // Only run once — avoid double-checking on mount + auth event
-    if (!checkedRef.current) {
-      checkedRef.current = true;
-      checkAppState();
-    }
-
+    // Single listener handles ALL auth state — no separate getSession() call
+    // This avoids the lock contention that causes "Lock not released" errors
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (event === 'SIGNED_IN' && session?.user) {
-          // Use the session user directly — no extra getUser() call
+        if (session?.user) {
+          // SIGNED_IN, TOKEN_REFRESHED, INITIAL_SESSION — all have a user
           await loadProfile(session.user);
-        } else if (event === 'SIGNED_OUT') {
+        } else {
+          // SIGNED_OUT or no session
           setUser(null);
           setIsAuthenticated(false);
+          setIsLoadingAuth(false);
         }
       }
     );
 
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const checkAppState = async () => {
-    try {
-      setIsLoadingAuth(true);
-      setAuthError(null);
-
-      const { data: { session } } = await supabase.auth.getSession();
-
-      if (session?.user) {
-        // We already have the user from the session — just get the profile
-        await loadProfile(session.user);
-      } else {
-        setIsLoadingAuth(false);
-        setIsAuthenticated(false);
-      }
-    } catch (error) {
-      console.error('Auth state check failed:', error);
-      setAuthError({
-        type: 'unknown',
-        message: error.message || 'An unexpected error occurred',
+    // Safety timeout — if onAuthStateChange never fires (e.g. no network),
+    // stop showing the loading spinner after 5s
+    const timeout = setTimeout(() => {
+      setIsLoadingAuth((prev) => {
+        if (prev) {
+          setIsAuthenticated(false);
+          return false;
+        }
+        return prev;
       });
-      setIsLoadingAuth(false);
-    }
-  };
+    }, 5000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timeout);
+    };
+  }, []);
 
   // Fetch the profile row — create one if it doesn't exist yet
   const loadProfile = async (authUser) => {
@@ -118,7 +106,6 @@ export const AuthProvider = ({ children }) => {
         authError,
         logout,
         navigateToLogin,
-        checkAppState,
       }}
     >
       {children}
