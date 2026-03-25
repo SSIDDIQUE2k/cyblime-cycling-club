@@ -72,57 +72,35 @@ export default function BlogPost() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [post?.id]);
 
-  // Parse content and insert images at specified positions
-  const renderContentWithImages = () => {
+  // Render blog content — supports both HTML (from Quill/TinyMCE) and plain text
+  const renderContent = () => {
     if (!post?.content) return null;
 
-    // Split content into paragraphs
-    const paragraphs = (post.content || "").split('\n\n').filter(p => p.trim());
-    const contentImages = post.content_images || [];
-    
-    // Create a map of position -> image
-    const imageMap = {};
-    contentImages.forEach(img => {
-      if (!imageMap[img.position]) {
-        imageMap[img.position] = [];
-      }
-      imageMap[img.position].push(img);
-    });
+    const content = post.content;
 
-    const elements = [];
-    
-    paragraphs.forEach((paragraph, index) => {
-      // Add paragraph
-      elements.push(
-        <p key={`p-${index}`} className="text-[var(--cy-text)] text-lg leading-relaxed mb-6">
-          {paragraph}
-        </p>
+    // Check if content is HTML (contains tags)
+    const isHtml = /<[a-z][\s\S]*>/i.test(content);
+
+    if (isHtml) {
+      // Render as HTML — content from Quill/TinyMCE rich text editor
+      return (
+        <div
+          className="prose prose-lg max-w-none text-[var(--cy-text)]
+            prose-headings:text-[var(--cy-text)] prose-p:text-[var(--cy-text)]
+            prose-strong:text-[var(--cy-text)] prose-a:text-[#ff6b35]
+            prose-img:rounded-xl prose-img:shadow-lg prose-img:max-w-full"
+          dangerouslySetInnerHTML={{ __html: content }}
+        />
       );
-      
-      // Add images after this paragraph if any
-      if (imageMap[index]) {
-        imageMap[index].forEach((img, imgIndex) => {
-          elements.push(
-            <figure key={`img-${index}-${imgIndex}`} className="my-8">
-              <div className="relative rounded-2xl overflow-hidden shadow-xl shadow-black/20">
-                <img
-                  src={img.url}
-                  alt={img.caption || ''}
-                  className="w-full h-auto"
-                />
-              </div>
-              {img.caption && (
-                <figcaption className="text-sm text-[var(--cy-text-muted)] italic mt-3 text-center">
-                  {img.caption}
-                </figcaption>
-              )}
-            </figure>
-          );
-        });
-      }
-    });
+    }
 
-    return elements;
+    // Fallback: plain text — split by double newlines
+    const paragraphs = content.split('\n\n').filter(p => p.trim());
+    return paragraphs.map((paragraph, index) => (
+      <p key={`p-${index}`} className="text-[var(--cy-text)] text-lg leading-relaxed mb-6">
+        {paragraph}
+      </p>
+    ));
   };
 
   if (isLoading) {
@@ -264,7 +242,7 @@ export default function BlogPost() {
             className="article-content"
           >
             <div className="max-w-3xl">
-              {renderContentWithImages()}
+              {renderContent()}
             </div>
           </motion.div>
 
