@@ -102,13 +102,9 @@ export default function Login() {
     <div className="min-h-screen w-full bg-[var(--cy-bg)] flex overflow-hidden">
       {/* LEFT SIDE — Branding & Value Props */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-        {/* Background image */}
+        {/* Background — gradient fallback, override in CMS site settings */}
         <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1541625602330-2277a4c46182?w=1200&q=80')",
-          }}
+          className="absolute inset-0 bg-gradient-to-br from-[#1a1a2e] to-[#16213e]"
         />
         {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-r from-[var(--cy-bg)] via-[var(--cy-bg)]/80 to-transparent" />

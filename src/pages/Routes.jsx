@@ -64,12 +64,12 @@ const RouteCard = ({ route, index }) => {
       transition={{ duration: 0.5, delay: index * 0.05 }}
       className="bg-[var(--cy-bg-card)] rounded-2xl overflow-hidden border border-[var(--cy-border)] hover:shadow-lg hover:shadow-black/30 transition-all duration-300 group cursor-pointer"
     >
-      <div className="relative h-48 overflow-hidden">
-        <img
-          src={route.map_image_url || "https://images.unsplash.com/photo-1541625602330-2277a4c46182?w=600&q=80"}
+      <div className="relative h-48 overflow-hidden bg-[var(--cy-bg-elevated)]">
+        {route.map_image_url ? <img
+          src={route.map_image_url}
           alt={route.name}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-        />
+        /> : <div className="w-full h-full flex items-center justify-center text-[var(--cy-text-muted)] text-sm">No image</div>}
         <Badge className={`absolute top-4 left-4 ${difficultyColors[route.difficulty]} border-0 font-semibold`}>
           {route.difficulty}
         </Badge>

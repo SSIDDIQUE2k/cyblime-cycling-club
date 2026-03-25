@@ -16,7 +16,7 @@ const DEFAULT_BLOG_CONTENT = {
   }
 };
 
-const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1541625602330-2277a4c46182?w=800&q=80";
+const DEFAULT_IMAGE = "";
 
 // Strip HTML tags for excerpt display
 function stripHtml(html) {
@@ -197,12 +197,12 @@ export default function Blog() {
 
               {/* Image side */}
               <div className="order-1 md:order-2">
-                <div className="relative aspect-[4/3] rounded-2xl overflow-hidden">
-                  <img
+                <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
+                  {(heroPost.featured_image || DEFAULT_IMAGE) && <img
                     src={heroPost.featured_image || DEFAULT_IMAGE}
                     alt={heroPost.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
+                  />}
                 </div>
               </div>
             </motion.article>
@@ -231,12 +231,12 @@ export default function Blog() {
                   className="group cursor-pointer h-full"
                 >
                   {/* Image with overlay text */}
-                  <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-4">
-                    <img
+                  <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-4 bg-gradient-to-br from-gray-700 to-gray-900">
+                    {(post.featured_image || DEFAULT_IMAGE) && <img
                       src={post.featured_image || DEFAULT_IMAGE}
                       alt={post.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
+                    />}
                     {/* Dark gradient overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                     {/* Text on image */}

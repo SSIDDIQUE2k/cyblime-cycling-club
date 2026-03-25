@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 // Default content for CMS fallback
 const DEFAULT_HOME_CONTENT = {
   hero_slides: [
-    { heading: "Ride Together.\nGrow Together.", subheading: "Join London's fastest-growing cycling community.", image_url: "https://images.unsplash.com/photo-1541625602330-2277a4c46182?w=1920&q=80" }
+    { heading: "Ride Together.\nGrow Together.", subheading: "Join London's fastest-growing cycling community.", image_url: "" }
   ],
   values: [
     { title: "Adventure Awaits", description: "New routes, hidden trails, and open roads — every ride is an opportunity for discovery.", icon: "compass" },
@@ -81,11 +81,15 @@ export default function Home() {
       <section className="relative h-screen w-full overflow-hidden -mt-20">
         {/* Background image */}
         <div className="absolute inset-0">
-          <img
-            src={heroSlide.image_url}
-            alt="Cyblime Cycling"
-            className="w-full h-full object-cover"
-          />
+          {heroSlide.image_url ? (
+            <img
+              src={heroSlide.image_url}
+              alt="Cyblime Cycling"
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-[#1a1a2e] to-[#16213e]" />
+          )}
           {/* Gradient overlay — dark at bottom for text readability */}
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
           <div className="absolute inset-0 bg-black/20" />

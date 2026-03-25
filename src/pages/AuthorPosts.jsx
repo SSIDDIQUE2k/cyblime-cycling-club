@@ -112,12 +112,12 @@ export default function AuthorPosts() {
                 transition={{ delay: index * 0.1 }}
                 className="bg-[var(--cy-bg-card)] rounded-2xl overflow-hidden border border-[var(--cy-border)] hover:shadow-lg hover:shadow-black/30 transition-all"
               >
-                <div className="relative h-48 overflow-hidden">
-                  <img
-                    src={post.featured_image || "https://images.unsplash.com/photo-1541625602330-2277a4c46182?w=600&q=80"}
+                <div className="relative h-48 overflow-hidden bg-[var(--cy-bg-elevated)]">
+                  {post.featured_image ? <img
+                    src={post.featured_image}
                     alt={post.title}
                     className="w-full h-full object-cover"
-                  />
+                  /> : <div className="w-full h-full flex items-center justify-center text-[var(--cy-text-muted)] text-sm">No image</div>}
                 </div>
                 <div className="p-6">
                   <Badge className="bg-[#6BCBFF]/20 text-[#6BCBFF] border-0 mb-3">

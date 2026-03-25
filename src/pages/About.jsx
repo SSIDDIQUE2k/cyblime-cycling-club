@@ -56,8 +56,10 @@ const DEFAULT_ABOUT_CONTENT = {
     founded_year: "2019",
     origin_text: "What started as weekend group rides with a handful of friends has grown into a thriving community of over 2,500 active members.",
     member_count: "2,500",
-    description: "Today, we're proud to be one of the most inclusive and dynamic cycling clubs in the region, known for our expert-led events, stunning adventure trips, and unwavering commitment to helping every rider reach their full potential."
+    description: "Today, we're proud to be one of the most inclusive and dynamic cycling clubs in the region, known for our expert-led events, stunning adventure trips, and unwavering commitment to helping every rider reach their full potential.",
+    images: ["", "", "", ""]
   },
+  benefits_image: "",
   values: [
     { title: "Community First", description: "We believe in the power of connection. Every ride, every event, every interaction is an opportunity to build lasting friendships and support each other's growth." },
     { title: "Excellence in Every Ride", description: "From route planning to safety protocols, we maintain the highest standards. Our expert ride leaders ensure every experience is memorable, safe, and rewarding." },
@@ -183,30 +185,37 @@ export default function About() {
               transition={{ duration: 0.8 }}
               className="grid grid-cols-2 gap-4"
             >
-              <div className="space-y-4">
-                <img 
-                  src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80" 
-                  alt="Cycling"
-                  className="w-full h-48 object-cover rounded-2xl"
-                />
-                <img 
-                  src="https://images.unsplash.com/photo-1541625602330-2277a4c46182?w=400&q=80" 
-                  alt="Group ride"
-                  className="w-full h-64 object-cover rounded-2xl"
-                />
-              </div>
-              <div className="space-y-4 mt-8">
-                <img 
-                  src="https://images.unsplash.com/photo-1517649763962-0c623066013b?w=400&q=80" 
-                  alt="Adventure"
-                  className="w-full h-64 object-cover rounded-2xl"
-                />
-                <img 
-                  src="https://images.unsplash.com/photo-1571188654248-7a89213915f7?w=400&q=80" 
-                  alt="Cyclist"
-                  className="w-full h-48 object-cover rounded-2xl"
-                />
-              </div>
+              {(() => {
+                const imgs = content.story?.images || [];
+                const placeholders = [
+                  { alt: "Cycling", h: "h-48" },
+                  { alt: "Group ride", h: "h-64" },
+                  { alt: "Adventure", h: "h-64" },
+                  { alt: "Cyclist", h: "h-48" },
+                ];
+                return (
+                  <>
+                    <div className="space-y-4">
+                      {[0, 1].map(i => imgs[i] ? (
+                        <img key={i} src={imgs[i]} alt={placeholders[i].alt} className={`w-full ${placeholders[i].h} object-cover rounded-2xl`} />
+                      ) : (
+                        <div key={i} className={`w-full ${placeholders[i].h} rounded-2xl bg-[var(--cy-bg-elevated)] border border-[var(--cy-border)] flex items-center justify-center`}>
+                          <span className="text-[var(--cy-text-muted)] text-sm">Add image in Page Editor</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="space-y-4 mt-8">
+                      {[2, 3].map(i => imgs[i] ? (
+                        <img key={i} src={imgs[i]} alt={placeholders[i].alt} className={`w-full ${placeholders[i].h} object-cover rounded-2xl`} />
+                      ) : (
+                        <div key={i} className={`w-full ${placeholders[i].h} rounded-2xl bg-[var(--cy-bg-elevated)] border border-[var(--cy-border)] flex items-center justify-center`}>
+                          <span className="text-[var(--cy-text-muted)] text-sm">Add image in Page Editor</span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                );
+              })()}
             </motion.div>
           </div>
         </div>
@@ -285,11 +294,17 @@ export default function About() {
               transition={{ duration: 0.8 }}
               className="relative"
             >
-              <img 
-                src="https://images.unsplash.com/photo-1534787238916-9ba6764efd4f?w=800&q=80" 
-                alt="Cyclists celebrating"
-                className="w-full h-[600px] object-cover rounded-3xl shadow-2xl"
-              />
+              {content.benefits_image ? (
+                <img
+                  src={content.benefits_image}
+                  alt="Cyclists celebrating"
+                  className="w-full h-[600px] object-cover rounded-3xl shadow-2xl"
+                />
+              ) : (
+                <div className="w-full h-[600px] rounded-3xl bg-[var(--cy-bg-elevated)] border border-[var(--cy-border)] flex items-center justify-center">
+                  <span className="text-[var(--cy-text-muted)]">Add image in Page Editor</span>
+                </div>
+              )}
             </motion.div>
           </div>
         </div>

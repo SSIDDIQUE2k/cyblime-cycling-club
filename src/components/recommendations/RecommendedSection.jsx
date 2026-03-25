@@ -51,12 +51,12 @@ export default function RecommendedSection({ recommendations, profile }) {
                   transition={{ delay: index * 0.1 }}
                   className="bg-[var(--cy-bg-card)] rounded-2xl overflow-hidden border border-[var(--cy-border)] hover:shadow-lg hover:shadow-black/30 shadow-black/20 transition-all"
                 >
-                  <div className="relative h-40">
-                    <img
-                      src={route.map_image_url || "https://images.unsplash.com/photo-1541625602330-2277a4c46182?w=600&q=80"}
+                  <div className="relative h-40 bg-[var(--cy-bg-elevated)]">
+                    {route.map_image_url ? <img
+                      src={route.map_image_url}
                       alt={route.name}
                       className="w-full h-full object-cover"
-                    />
+                    /> : <div className="w-full h-full flex items-center justify-center text-[var(--cy-text-muted)] text-sm">No image</div>}
                     <Badge className="absolute top-3 left-3 bg-[#A4FF4F] text-[var(--cy-text)] border-0">
                       {route.difficulty}
                     </Badge>
