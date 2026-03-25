@@ -16,13 +16,15 @@ import { motion } from "framer-motion";
 // Wysi editor wrapper — initializes the CDN-loaded Wysi on a textarea
 function WysiEditor({ value, onChange, visible }) {
   const textareaRef = useRef(null);
+  const editorWrapperRef = useRef(null);
   const wysiInitialized = useRef(false);
+  const fileInputRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (!visible || !textareaRef.current || wysiInitialized.current) return;
     if (typeof window.Wysi === 'undefined') return;
 
-    // Small delay to ensure the DOM is ready inside the dialog
     const timer = setTimeout(() => {
       try {
         window.Wysi({
@@ -43,6 +45,8 @@ function WysiEditor({ value, onChange, visible }) {
           }
         });
         wysiInitialized.current = true;
+        // Store the wrapper so we can insert content
+        editorWrapperRef.current = textareaRef.current?.closest('.wysi-wrapper') || textareaRef.current?.parentElement;
       } catch (err) {
         console.error('Wysi init error:', err);
       }
@@ -58,12 +62,82 @@ function WysiEditor({ value, onChange, visible }) {
     }
   }, [visible]);
 
+  // Upload image to Supabase and insert <img> into the editor
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      // Find the Wysi contenteditable iframe or div and insert the image
+      const wrapper = editorWrapperRef.current || textareaRef.current?.parentElement;
+      const editable = wrapper?.querySelector('[contenteditable="true"]') || wrapper?.querySelector('iframe');
+
+      if (editable && editable.tagName === 'IFRAME') {
+        // If Wysi uses an iframe
+        const doc = editable.contentDocument || editable.contentWindow.document;
+        doc.execCommand('insertHTML', false, `<img src="${file_url}" alt="uploaded image" style="max-width:100%;border-radius:8px;" />`);
+      } else if (editable) {
+        // If Wysi uses a contenteditable div
+        editable.focus();
+        document.execCommand('insertHTML', false, `<img src="${file_url}" alt="uploaded image" style="max-width:100%;border-radius:8px;" />`);
+      } else {
+        // Fallback: append to the textarea value directly
+        const imgHtml = `<img src="${file_url}" alt="uploaded image" style="max-width:100%;border-radius:8px;" />`;
+        const current = textareaRef.current?.value || '';
+        textareaRef.current.value = current + imgHtml;
+        onChange(current + imgHtml);
+      }
+      // Trigger a change so Wysi picks it up
+      textareaRef.current?.dispatchEvent(new Event('input', { bubbles: true }));
+    } catch (err) {
+      alert("Image upload failed: " + (err.message || err));
+    }
+    setUploading(false);
+    // Reset file input so user can upload the same file again
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   return (
-    <textarea
-      ref={textareaRef}
-      defaultValue={value || ""}
-      style={{ minHeight: '400px', width: '100%' }}
-    />
+    <div>
+      <textarea
+        ref={textareaRef}
+        defaultValue={value || ""}
+        style={{ minHeight: '400px', width: '100%' }}
+      />
+      {/* Upload image button below the editor */}
+      <div className="mt-2 flex items-center gap-3">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleImageUpload}
+          className="hidden"
+          id="wysi-image-upload"
+        />
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+        >
+          {uploading ? (
+            <>
+              <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-700 rounded-full animate-spin" />
+              Uploading...
+            </>
+          ) : (
+            <>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Upload Image
+            </>
+          )}
+        </button>
+        <span className="text-xs text-gray-500 dark:text-gray-400">Insert an image from your computer into the post</span>
+      </div>
+    </div>
   );
 }
 
