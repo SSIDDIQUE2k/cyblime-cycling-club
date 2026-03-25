@@ -20,6 +20,7 @@ function WysiEditor({ value, onChange, visible }) {
   const wysiInitialized = useRef(false);
   const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
+  const [imageSize, setImageSize] = useState('full'); // small, medium, large, full
 
   useEffect(() => {
     if (!visible || !textareaRef.current || wysiInitialized.current) return;
@@ -62,6 +63,32 @@ function WysiEditor({ value, onChange, visible }) {
     }
   }, [visible]);
 
+  const SIZE_STYLES = {
+    small:  'width:25%;max-width:200px;',
+    medium: 'width:50%;max-width:400px;',
+    large:  'width:75%;max-width:600px;',
+    full:   'width:100%;max-width:100%;',
+  };
+
+  // Insert HTML into the Wysi editable area
+  const insertHtml = (html) => {
+    const wrapper = editorWrapperRef.current || textareaRef.current?.parentElement;
+    const editable = wrapper?.querySelector('[contenteditable="true"]') || wrapper?.querySelector('iframe');
+
+    if (editable && editable.tagName === 'IFRAME') {
+      const doc = editable.contentDocument || editable.contentWindow.document;
+      doc.execCommand('insertHTML', false, html);
+    } else if (editable) {
+      editable.focus();
+      document.execCommand('insertHTML', false, html);
+    } else {
+      const current = textareaRef.current?.value || '';
+      textareaRef.current.value = current + html;
+      onChange(current + html);
+    }
+    textareaRef.current?.dispatchEvent(new Event('input', { bubbles: true }));
+  };
+
   // Upload image to Supabase and insert <img> into the editor
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -69,32 +96,12 @@ function WysiEditor({ value, onChange, visible }) {
     setUploading(true);
     try {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      // Find the Wysi contenteditable iframe or div and insert the image
-      const wrapper = editorWrapperRef.current || textareaRef.current?.parentElement;
-      const editable = wrapper?.querySelector('[contenteditable="true"]') || wrapper?.querySelector('iframe');
-
-      if (editable && editable.tagName === 'IFRAME') {
-        // If Wysi uses an iframe
-        const doc = editable.contentDocument || editable.contentWindow.document;
-        doc.execCommand('insertHTML', false, `<img src="${file_url}" alt="uploaded image" style="max-width:100%;border-radius:8px;" />`);
-      } else if (editable) {
-        // If Wysi uses a contenteditable div
-        editable.focus();
-        document.execCommand('insertHTML', false, `<img src="${file_url}" alt="uploaded image" style="max-width:100%;border-radius:8px;" />`);
-      } else {
-        // Fallback: append to the textarea value directly
-        const imgHtml = `<img src="${file_url}" alt="uploaded image" style="max-width:100%;border-radius:8px;" />`;
-        const current = textareaRef.current?.value || '';
-        textareaRef.current.value = current + imgHtml;
-        onChange(current + imgHtml);
-      }
-      // Trigger a change so Wysi picks it up
-      textareaRef.current?.dispatchEvent(new Event('input', { bubbles: true }));
+      const sizeStyle = SIZE_STYLES[imageSize] || SIZE_STYLES.full;
+      insertHtml(`<img src="${file_url}" alt="uploaded image" style="${sizeStyle}border-radius:8px;display:block;margin:8px 0;" />`);
     } catch (err) {
       alert("Image upload failed: " + (err.message || err));
     }
     setUploading(false);
-    // Reset file input so user can upload the same file again
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -105,37 +112,66 @@ function WysiEditor({ value, onChange, visible }) {
         defaultValue={value || ""}
         style={{ minHeight: '400px', width: '100%' }}
       />
-      {/* Upload image button below the editor */}
-      <div className="mt-2 flex items-center gap-3">
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleImageUpload}
-          className="hidden"
-          id="wysi-image-upload"
-        />
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
-        >
-          {uploading ? (
-            <>
-              <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-700 rounded-full animate-spin" />
-              Uploading...
-            </>
-          ) : (
-            <>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              Upload Image
-            </>
-          )}
-        </button>
-        <span className="text-xs text-gray-500 dark:text-gray-400">Insert an image from your computer into the post</span>
+      {/* Image upload toolbar */}
+      <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Size picker */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Size:</span>
+            {[
+              { key: 'small', label: 'S', title: 'Small (25%)' },
+              { key: 'medium', label: 'M', title: 'Medium (50%)' },
+              { key: 'large', label: 'L', title: 'Large (75%)' },
+              { key: 'full', label: 'Full', title: 'Full width (100%)' },
+            ].map(({ key, label, title }) => (
+              <button
+                key={key}
+                type="button"
+                title={title}
+                onClick={() => setImageSize(key)}
+                className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-colors ${
+                  imageSize === key
+                    ? 'bg-[#c9a227] text-white'
+                    : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <div className="w-px h-6 bg-gray-300 dark:bg-gray-600" />
+
+          {/* Upload button */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageUpload}
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="inline-flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+          >
+            {uploading ? (
+              <>
+                <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-700 rounded-full animate-spin" />
+                Uploading...
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Upload Image
+              </>
+            )}
+          </button>
+          <span className="text-xs text-gray-500 dark:text-gray-400">Pick a size, then upload</span>
+        </div>
       </div>
     </div>
   );
