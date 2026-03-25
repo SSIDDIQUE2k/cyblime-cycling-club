@@ -29,9 +29,13 @@ export default function Blog() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { data: posts = [], isLoading } = useQuery({
+  const { data: posts = [], isLoading, error } = useQuery({
     queryKey: ['blogPosts'],
-    queryFn: () => base44.entities.BlogPost.filter({ published: true }, '-created_date')
+    queryFn: async () => {
+      const result = await base44.entities.BlogPost.filter({ published: true }, '-created_date');
+      return result;
+    },
+    retry: 2,
   });
 
   const categories = ["news", "tips", "stories", "gear", "training", "events", "routes"];
@@ -154,6 +158,13 @@ export default function Blog() {
         <div className="max-w-5xl mx-auto px-6 py-20 text-center">
           <div className="w-8 h-8 border-3 border-gray-200 border-t-gray-800 rounded-full animate-spin mx-auto mb-4" />
           <p className="text-gray-400">Loading articles...</p>
+        </div>
+      )}
+
+      {/* Query Error */}
+      {error && (
+        <div className="max-w-5xl mx-auto px-6 py-8 text-center">
+          <p className="text-red-500 text-sm">Failed to load posts. Please refresh the page.</p>
         </div>
       )}
 
