@@ -86,7 +86,7 @@ export default function AdminBlogManagement() {
     'header', 'bold', 'italic', 'underline', 'strike',
     'color', 'background', 'align',
     'list', 'indent', 'blockquote', 'code-block',
-    'link', 'image', 'video', 'clean'
+    'link', 'image', 'video'
   ];
 
   const { data: posts = [] } = useQuery({
