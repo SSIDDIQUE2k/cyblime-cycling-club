@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import AdminLayout from "../components/admin/AdminLayout";
@@ -12,173 +12,37 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { motion } from "framer-motion";
+import ReactQuill from "react-quill-new";
+import "react-quill-new/dist/quill.snow.css";
 
-// Wysi editor wrapper — initializes the CDN-loaded Wysi on a textarea
-function WysiEditor({ value, onChange, visible }) {
-  const textareaRef = useRef(null);
-  const editorWrapperRef = useRef(null);
-  const wysiInitialized = useRef(false);
-  const fileInputRef = useRef(null);
-  const [uploading, setUploading] = useState(false);
-  const [imageSize, setImageSize] = useState('full'); // small, medium, large, full
-
-  useEffect(() => {
-    if (!visible || !textareaRef.current || wysiInitialized.current) return;
-    if (typeof window.Wysi === 'undefined') return;
-
-    const timer = setTimeout(() => {
+// Custom image handler — uploads to Supabase Storage instead of base64
+function useQuillImageHandler(quillRef) {
+  return useCallback(() => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file) return;
       try {
-        window.Wysi({
-          el: textareaRef.current,
-          height: 400,
-          autoGrow: true,
-          tools: [
-            'format', '|',
-            'bold', 'italic', 'underline', 'strike', '|',
-            { label: 'Alignment', items: ['alignLeft', 'alignCenter', 'alignRight', 'alignJustify'] }, '|',
-            'ul', 'ol', '|',
-            'indent', 'outdent', '|',
-            'link', 'image', 'hr', 'quote', '|',
-            'removeFormat'
-          ],
-          onChange: (content) => {
-            onChange(content);
-          }
-        });
-        wysiInitialized.current = true;
-        // Store the wrapper so we can insert content
-        editorWrapperRef.current = textareaRef.current?.closest('.wysi-wrapper') || textareaRef.current?.parentElement;
+        const { file_url } = await base44.integrations.Core.UploadFile({ file });
+        const editor = quillRef.current?.getEditor();
+        if (editor) {
+          const range = editor.getSelection(true);
+          editor.insertEmbed(range.index, 'image', file_url);
+          editor.setSelection(range.index + 1);
+        }
       } catch (err) {
-        console.error('Wysi init error:', err);
+        alert("Image upload failed: " + (err.message || err));
       }
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, [visible, onChange]);
-
-  // Reset when dialog closes
-  useEffect(() => {
-    if (!visible) {
-      wysiInitialized.current = false;
-    }
-  }, [visible]);
-
-  const SIZE_STYLES = {
-    small:  'width:25%;max-width:200px;',
-    medium: 'width:50%;max-width:400px;',
-    large:  'width:75%;max-width:600px;',
-    full:   'width:100%;max-width:100%;',
-  };
-
-  // Insert HTML into the Wysi editable area
-  const insertHtml = (html) => {
-    const wrapper = editorWrapperRef.current || textareaRef.current?.parentElement;
-    const editable = wrapper?.querySelector('[contenteditable="true"]') || wrapper?.querySelector('iframe');
-
-    if (editable && editable.tagName === 'IFRAME') {
-      const doc = editable.contentDocument || editable.contentWindow.document;
-      doc.execCommand('insertHTML', false, html);
-    } else if (editable) {
-      editable.focus();
-      document.execCommand('insertHTML', false, html);
-    } else {
-      const current = textareaRef.current?.value || '';
-      textareaRef.current.value = current + html;
-      onChange(current + html);
-    }
-    textareaRef.current?.dispatchEvent(new Event('input', { bubbles: true }));
-  };
-
-  // Upload image to Supabase and insert <img> into the editor
-  const handleImageUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      const sizeStyle = SIZE_STYLES[imageSize] || SIZE_STYLES.full;
-      insertHtml(`<img src="${file_url}" alt="uploaded image" style="${sizeStyle}border-radius:8px;display:block;margin:8px 0;" />`);
-    } catch (err) {
-      alert("Image upload failed: " + (err.message || err));
-    }
-    setUploading(false);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
-
-  return (
-    <div>
-      <textarea
-        ref={textareaRef}
-        defaultValue={value || ""}
-        style={{ minHeight: '400px', width: '100%' }}
-      />
-      {/* Image upload toolbar */}
-      <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-        <div className="flex items-center gap-3 flex-wrap">
-          {/* Size picker */}
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Size:</span>
-            {[
-              { key: 'small', label: 'S', title: 'Small (25%)' },
-              { key: 'medium', label: 'M', title: 'Medium (50%)' },
-              { key: 'large', label: 'L', title: 'Large (75%)' },
-              { key: 'full', label: 'Full', title: 'Full width (100%)' },
-            ].map(({ key, label, title }) => (
-              <button
-                key={key}
-                type="button"
-                title={title}
-                onClick={() => setImageSize(key)}
-                className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-colors ${
-                  imageSize === key
-                    ? 'bg-[#c9a227] text-white'
-                    : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-
-          <div className="w-px h-6 bg-gray-300 dark:bg-gray-600" />
-
-          {/* Upload button */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="hidden"
-          />
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className="inline-flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
-          >
-            {uploading ? (
-              <>
-                <span className="w-4 h-4 border-2 border-gray-400 border-t-gray-700 rounded-full animate-spin" />
-                Uploading...
-              </>
-            ) : (
-              <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                Upload Image
-              </>
-            )}
-          </button>
-          <span className="text-xs text-gray-500 dark:text-gray-400">Pick a size, then upload</span>
-        </div>
-      </div>
-    </div>
-  );
+    };
+    input.click();
+  }, [quillRef]);
 }
 
 export default function AdminBlogManagement() {
   const queryClient = useQueryClient();
+  const quillRef = useRef(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -192,6 +56,38 @@ export default function AdminBlogManagement() {
     tags: [],
     video_url: ""
   });
+
+  const imageHandler = useQuillImageHandler(quillRef);
+
+  // Quill modules config — memoized to avoid re-renders
+  const quillModules = useMemo(() => ({
+    toolbar: {
+      container: [
+        [{ 'header': [1, 2, 3, 4, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ 'color': [] }, { 'background': [] }],
+        [{ 'align': [] }],
+        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+        [{ 'indent': '-1' }, { 'indent': '+1' }],
+        ['blockquote', 'code-block'],
+        ['link', 'image', 'video'],
+        ['clean']
+      ],
+      handlers: {
+        image: imageHandler
+      }
+    },
+    clipboard: {
+      matchVisual: false
+    }
+  }), [imageHandler]);
+
+  const quillFormats = [
+    'header', 'bold', 'italic', 'underline', 'strike',
+    'color', 'background', 'align',
+    'list', 'indent', 'blockquote', 'code-block',
+    'link', 'image', 'video', 'clean'
+  ];
 
   const { data: posts = [] } = useQuery({
     queryKey: ['adminBlogPosts'],
@@ -254,7 +150,6 @@ export default function AdminBlogManagement() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Clean up data — remove empty optional fields so Supabase doesn't reject them
     const data = { ...formData };
     if (!data.video_url) delete data.video_url;
     if (!data.featured_image) delete data.featured_image;
@@ -284,6 +179,19 @@ export default function AdminBlogManagement() {
 
   return (
     <AdminLayout>
+      <style>{`
+        .ql-container { font-size: 16px; }
+        .ql-editor { min-height: 400px; line-height: 1.8; }
+        .ql-editor img {
+          max-width: 100%;
+          border-radius: 8px;
+          cursor: pointer;
+          resize: both;
+          overflow: auto;
+        }
+        .ql-toolbar.ql-snow { border-radius: 8px 8px 0 0; }
+        .ql-container.ql-snow { border-radius: 0 0 8px 8px; }
+      `}</style>
       <div className="max-w-7xl mx-auto space-y-6">
         <div>
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Blog Posts</h1>
@@ -435,14 +343,21 @@ export default function AdminBlogManagement() {
                 />
               </div>
 
-              {/* Wysi Rich Text Editor */}
+              {/* Quill Rich Text Editor */}
               <div>
                 <Label className="mb-2 block">Content</Label>
-                <WysiEditor
-                  value={formData.content}
-                  onChange={(content) => setFormData((prev) => ({ ...prev, content }))}
-                  visible={editDialogOpen}
-                />
+                {editDialogOpen && (
+                  <ReactQuill
+                    ref={quillRef}
+                    theme="snow"
+                    value={formData.content}
+                    onChange={(content) => setFormData((prev) => ({ ...prev, content }))}
+                    modules={quillModules}
+                    formats={quillFormats}
+                    placeholder="Write your blog post content here..."
+                    style={{ minHeight: '450px' }}
+                  />
+                )}
               </div>
 
               {/* Category + Tags + Publish */}
