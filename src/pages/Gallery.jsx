@@ -62,7 +62,7 @@ export default function Gallery() {
       {/* Instagram Gallery - Elfsight Embed */}
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="elfsight-app-2d8d00ba-72e1-4194-ac43-a42805e820de" data-elfsight-app-lazy></div>
+          <div className="elfsight-app-42fe24d4-6cc1-431b-a241-8510cd455b80" data-elfsight-app-lazy></div>
         </div>
       </section>
 
